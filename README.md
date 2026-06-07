@@ -15,6 +15,7 @@ This repository starts with a small executable core:
 - an anytime scheduler that chooses early exit or the next feature
 - pluggable feature extractors with deterministic demo implementations
 - a first embedding-cluster feature scaffold with documented harm and benign contrast sub-clusters
+- a frozen gpt-oss hidden-state embedding source decision for centroid and activation-probe research
 - an agent tool/action gate
 - examples for single-turn evaluation, private-output review, asynchronous audit, and tool-use flows
 - tests for early allow, early block, disagreement tracking, and tool gating
