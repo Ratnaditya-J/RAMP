@@ -1,6 +1,6 @@
 # Embedding Risk Feature
 
-The embedding risk feature scores semantic proximity between prompt spans and versioned harm sub-clusters.
+The embedding risk feature scores semantic proximity between prompt spans and versioned harm sub-clusters. The current research taxonomy is defined in [RAMP Safety Taxonomy v0.1](./ramp-safety-taxonomy.md).
 
 This stage is not meant to replace the prompt classifier. It measures whether a prompt contains local spans that are closer to known harmful-intent neighborhoods than to benign contrast neighborhoods. The feature is especially useful when the surface wording looks mild, indirect, or multi-step.
 
