@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RAMP Documentation</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #171717;
+        --muted: #5f6368;
+        --line: #d9dee7;
+        --paper: #ffffff;
+        --soft: #f7f8fb;
+        --accent: #0f766e;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background: var(--paper);
+        line-height: 1.55;
+      }
+
+      main {
+        width: min(980px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 64px 0 72px;
+      }
+
+      h1 {
+        max-width: 780px;
+        margin: 0 0 16px;
+        font-size: clamp(2.2rem, 6vw, 4rem);
+        line-height: 1;
+        letter-spacing: 0;
+      }
+
+      .lede {
+        max-width: 760px;
+        margin: 0 0 32px;
+        color: var(--muted);
+        font-size: 1.12rem;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 0 0 48px;
+      }
+
+      a.button {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        padding: 0 16px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: var(--ink);
+        text-decoration: none;
+        font-weight: 650;
+      }
+
+      a.button.primary {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: white;
+      }
+
+      section {
+        border-top: 1px solid var(--line);
+        padding-top: 28px;
+      }
+
+      h2 {
+        margin: 0 0 14px;
+        font-size: 1.35rem;
+      }
+
+      ul {
+        padding-left: 20px;
+      }
+
+      li {
+        margin: 8px 0;
+      }
+
+      code {
+        border-radius: 4px;
+        background: var(--soft);
+        padding: 2px 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>RAMP: Risk Accumulation and Monitoring Pipeline</h1>
+      <p class="lede">
+        RAMP is an open-source reference implementation for evaluating multi-signal safety
+        classifiers under a common schema. It compares standalone guard models with accumulated
+        evidence variants across prompt, embedding, activation, output, session, and tool/action
+        signals.
+      </p>
+      <nav class="actions" aria-label="Primary links">
+        <a class="button primary" href="./figures/">View Figure Walkthrough</a>
+        <a class="button" href="https://github.com/Ratnaditya-J/RAMP">GitHub Repository</a>
+      </nav>
+
+      <section>
+        <h2>Documentation</h2>
+        <ul>
+          <li><a href="./architecture.md">Architecture</a></li>
+          <li><a href="./anytime-risk-evaluation.md">Anytime Risk Evaluation</a></li>
+          <li><a href="./latency.md">Latency</a></li>
+          <li><a href="./deployment-topologies.md">Deployment Topologies</a></li>
+          <li><a href="./tool-action-gating.md">Tool / Action Gating</a></li>
+          <li><a href="./versioning-provenance.md">Versioning and Provenance</a></li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>
+
