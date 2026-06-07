@@ -1,0 +1,177 @@
+{
+  "manifest_id": "ramp_span_source_manifest_v0",
+  "description": "Candidate benchmark and eval sources for deriving reviewed span-level RAMP corpus examples.",
+  "safety_note": "Do not ingest operational harmful prompts verbatim into the public repo. Extract bounded spans, labels, source IDs, and provenance; store restricted raw examples outside the public repository when necessary.",
+  "sources": [
+    {
+      "source_id": "synthetic_v0",
+      "name": "RAMP synthetic non-instructional seed spans",
+      "url": "local:data/span_corpus/ramp_span_corpus_v0.jsonl",
+      "priority": "seed",
+      "recommended_use": "schema_validation",
+      "domains": ["all"],
+      "roles": ["harmful", "benign_near_neighbor", "ambiguous", "evasion", "optimization"],
+      "notes": "Safe abstract examples used to validate schema before benchmark-derived spans."
+    },
+    {
+      "source_id": "xstest",
+      "name": "XSTest",
+      "url": "https://aclanthology.org/2024.naacl-long.301/",
+      "priority": "high",
+      "recommended_use": "hard_benign_near_neighbors",
+      "domains": ["cyber_abuse", "weapons_and_physical_violence", "hate_harassment_and_abuse", "self_harm_and_wellbeing"],
+      "roles": ["benign_near_neighbor", "ambiguous"],
+      "notes": "Best source for exaggerated-safety and over-refusal cases because safe prompts are paired with unsafe contrasts."
+    },
+    {
+      "source_id": "wildguardmix",
+      "name": "WildGuardMix / WildGuard",
+      "url": "https://papers.nips.cc/paper_files/paper/2024/file/0f69b4b96a46f284b726fbd70f74fb3b-Paper-Datasets_and_Benchmarks_Track.pdf",
+      "priority": "high",
+      "recommended_use": "prompt_safety_and_contrastive_benign_examples",
+      "domains": ["all"],
+      "roles": ["harmful", "benign_near_neighbor", "ambiguous"],
+      "notes": "Useful for harmful-vs-benign prompt classification and contrastive benign prompts."
+    },
+    {
+      "source_id": "harmbench",
+      "name": "HarmBench",
+      "url": "https://arxiv.org/abs/2402.04249",
+      "priority": "high",
+      "recommended_use": "harmful_behavior_coverage",
+      "domains": ["cyber_abuse", "cbrn_and_hazardous_materials", "weapons_and_physical_violence", "nonviolent_illegal_activity"],
+      "roles": ["harmful", "evasion", "optimization"],
+      "notes": "Use behavior categories and reviewed spans; avoid storing operational details in public artifacts."
+    },
+    {
+      "source_id": "jailbreakbench",
+      "name": "JailbreakBench",
+      "url": "https://github.com/JailbreakBench/jailbreakbench",
+      "priority": "high",
+      "recommended_use": "jailbreak_and_evasion_coverage",
+      "domains": ["agent_tool_and_system_integrity", "cyber_abuse", "nonviolent_illegal_activity"],
+      "roles": ["evasion", "harmful", "ambiguous"],
+      "notes": "Use attack family, behavior, and judge labels for evasion spans and classifier-targeting metadata."
+    },
+    {
+      "source_id": "strongreject",
+      "name": "StrongREJECT",
+      "url": "https://ukgovernmentbeis.github.io/inspect_evals/evals/safeguards/strong_reject/index.html",
+      "priority": "high",
+      "recommended_use": "refusal_and_jailbreak_robustness",
+      "domains": ["all"],
+      "roles": ["harmful", "evasion", "optimization"],
+      "notes": "Useful for measuring whether jailbreaks elicit specific harmful responses; extract non-operational spans."
+    },
+    {
+      "source_id": "beavertails",
+      "name": "BeaverTails",
+      "url": "https://arxiv.org/abs/2307.04657",
+      "priority": "medium",
+      "recommended_use": "broad_harmlessness_labels",
+      "domains": ["all"],
+      "roles": ["harmful", "benign_near_neighbor", "ambiguous"],
+      "notes": "Large human-preference safety alignment dataset with helpfulness and harmlessness annotations."
+    },
+    {
+      "source_id": "safetybench",
+      "name": "SafetyBench",
+      "url": "https://github.com/thu-coai/SafetyBench",
+      "priority": "medium",
+      "recommended_use": "broad_safety_category_alignment",
+      "domains": ["all"],
+      "roles": ["harmful", "benign_near_neighbor", "ambiguous"],
+      "notes": "Multiple-choice safety benchmark; better for taxonomy mapping and category coverage than free-form span extraction."
+    },
+    {
+      "source_id": "salad_bench",
+      "name": "SALAD-Bench",
+      "url": "https://arxiv.org/abs/2402.05044",
+      "priority": "medium",
+      "recommended_use": "hierarchical_safety_category_mapping",
+      "domains": ["all"],
+      "roles": ["harmful", "evasion", "ambiguous"],
+      "notes": "Hierarchical safety benchmark useful for checking RAMP taxonomy coverage and attack-enhanced safety categories."
+    },
+    {
+      "source_id": "do_not_answer",
+      "name": "Do-Not-Answer",
+      "url": "https://github.com/libr-ai/do-not-answer",
+      "priority": "medium",
+      "recommended_use": "refusal_required_prompt_categories",
+      "domains": ["regulated_advice", "privacy_identity_and_secrets", "hate_harassment_and_abuse", "self_harm_and_wellbeing"],
+      "roles": ["harmful", "ambiguous"],
+      "notes": "Prompts responsible models should not answer; useful for boundary spans and refusal-label calibration."
+    },
+    {
+      "source_id": "toxicchat",
+      "name": "ToxicChat",
+      "url": "https://www.lmsys.org/blog/2023-10-30-toxicchat/",
+      "priority": "medium",
+      "recommended_use": "real_user_toxicity_and_moderation",
+      "domains": ["hate_harassment_and_abuse", "sexual_safety_and_content", "self_harm_and_wellbeing"],
+      "roles": ["harmful", "benign_near_neighbor", "ambiguous"],
+      "notes": "Real chat moderation dataset; useful for user-message phrasing and toxicity boundaries."
+    },
+    {
+      "source_id": "toxigen",
+      "name": "ToxiGen",
+      "url": "https://github.com/microsoft/TOXIGEN",
+      "priority": "medium",
+      "recommended_use": "implicit_hate_and_hard_benign_hate_neighbors",
+      "domains": ["hate_harassment_and_abuse"],
+      "roles": ["harmful", "benign_near_neighbor", "ambiguous"],
+      "notes": "Useful for implicit hate, group references, and benign statements near toxic semantic space."
+    },
+    {
+      "source_id": "realtoxicityprompts",
+      "name": "RealToxicityPrompts",
+      "url": "https://huggingface.co/datasets/allenai/real-toxicity-prompts",
+      "priority": "medium",
+      "recommended_use": "toxicity_continuation_risk",
+      "domains": ["hate_harassment_and_abuse", "sexual_safety_and_content"],
+      "roles": ["harmful", "benign_near_neighbor", "ambiguous"],
+      "notes": "Useful for toxicity scores and continuation-risk spans; not a complete safety taxonomy."
+    },
+    {
+      "source_id": "cyberseceval",
+      "name": "CyberSecEval",
+      "url": "https://ai.meta.com/research/publications/purple-llama-cyberseceval-a-benchmark-for-evaluating-the-cybersecurity-risks-of-large-language-models/",
+      "priority": "high",
+      "recommended_use": "cyber_harm_and_benign_security_tradeoff",
+      "domains": ["cyber_abuse"],
+      "roles": ["harmful", "benign_near_neighbor", "ambiguous", "evasion", "optimization"],
+      "notes": "Cyber-specific source for unsafe assistance, insecure code, and safety-utility tradeoff."
+    },
+    {
+      "source_id": "wmdp",
+      "name": "WMDP",
+      "url": "https://huggingface.co/datasets/cais/wmdp",
+      "priority": "restricted",
+      "recommended_use": "cbrn_proxy_category_mapping_only",
+      "domains": ["cbrn_and_hazardous_materials", "cyber_abuse"],
+      "roles": ["harmful", "ambiguous"],
+      "notes": "Use carefully as hazardous-knowledge proxy. Prefer category mapping and restricted-review handling over public span extraction."
+    },
+    {
+      "source_id": "agentharm",
+      "name": "AgentHarm",
+      "url": "https://ukgovernmentbeis.github.io/inspect_evals/evals/safeguards/agentharm/",
+      "priority": "restricted",
+      "recommended_use": "agentic_harm_and_tool_abuse",
+      "domains": ["agent_tool_and_system_integrity", "critical_infrastructure_and_sabotage", "cyber_abuse", "nonviolent_illegal_activity"],
+      "roles": ["harmful", "evasion", "optimization"],
+      "notes": "Contains harmful/offensive agent prompts and usage restrictions; use only for safety/security research and preserve license constraints."
+    },
+    {
+      "source_id": "ailuminate_demo",
+      "name": "MLCommons AILuminate Demo Prompt Dataset",
+      "url": "https://mlcommons.org/2025/01/ailuminate-demo-benchmark-prompt-dataset/",
+      "priority": "medium",
+      "recommended_use": "mlcommons_hazard_category_alignment",
+      "domains": ["all"],
+      "roles": ["harmful", "benign_near_neighbor", "ambiguous"],
+      "notes": "Useful for aligning RAMP categories with MLCommons hazard categories; keep eval contamination concerns in mind."
+    }
+  ]
+}

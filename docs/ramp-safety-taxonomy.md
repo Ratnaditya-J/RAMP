@@ -143,3 +143,41 @@ Final runtime centroids should be generated only after:
 4. Held-out validation sets are used to calibrate harmful-vs-benign margins, evasion thresholds, and actionability thresholds.
 
 Until then, demo centroids should remain clearly marked as scaffolding.
+
+## Span Corpus v0
+
+The first corpus artifact is `data/span_corpus/ramp_span_corpus_v0.jsonl`.
+
+It is a synthetic, non-instructional span corpus used to validate schema and taxonomy coverage. Each record contains:
+
+- `domain`
+- `subcluster_role`
+- `subcluster_id`
+- `label`
+- `source`
+- `policy_mapping`
+- `harm_severity`
+- `actionability`
+- `intent_confidence`
+- `reviewer_notes`
+
+The corpus includes harmful-class spans, benign near-neighbor spans, ambiguous boundary spans, evasion spans, and optimization spans. Harmful examples are written as high-level request descriptions rather than operational instructions.
+
+The next corpus milestone should add reviewed examples from public benchmark sources and red-team datasets, while preserving provenance and keeping any dangerous content behind an appropriate data handling boundary.
+
+Candidate benchmark and eval sources are tracked in `data/span_corpus/source_manifest_v0.json`.
+
+High-priority sources:
+
+- XSTest for hard benign near-neighbors and over-refusal contrasts.
+- WildGuardMix for prompt-safety labels and contrastive benign prompts.
+- HarmBench, JailbreakBench, and StrongREJECT for harmful behavior and jailbreak/evasion coverage.
+- CyberSecEval for cyber-specific harmful-vs-defensive-security tradeoffs.
+- AgentHarm for agentic misuse and tool-abuse spans, with restricted handling.
+- WMDP for CBRN/cyber hazardous-knowledge category mapping, with restricted handling.
+
+Medium-priority sources:
+
+- BeaverTails, SafetyBench, SALAD-Bench, Do-Not-Answer, ToxicChat, ToxiGen, RealToxicityPrompts, and MLCommons AILuminate demo prompts.
+
+Extraction should prefer local spans over full prompt storage and should record source ID, source split, source record hash, license notes, reviewer notes, and any safety redaction applied.
