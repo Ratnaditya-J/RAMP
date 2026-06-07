@@ -147,7 +147,8 @@
         <li><a href="#embedding">3. Embedding Risk</a></li>
         <li><a href="#activation">4. Activation Probe</a></li>
         <li><a href="#output">5. Output Classifier</a></li>
-        <li><a href="#audit">6. Async Audit Context</a></li>
+        <li><a href="#session">6. Session Risk</a></li>
+        <li><a href="#audit">7. Async Audit Context</a></li>
       </ol>
     </header>
 
@@ -207,9 +208,20 @@
         <img src="./Output-Classifier.png" alt="Output classifier diagram showing generated model output being evaluated for safety risk." />
       </figure>
 
+      <figure id="session">
+        <figcaption>
+          <h2>6. Session Risk Feature</h2>
+          <p>
+            Session-level attributes capture accumulating severity, harm drift, and multiple
+            prompts that combine into a stronger risk signal.
+          </p>
+        </figcaption>
+        <img src="./Session-Risk-Ledger.png" alt="Session risk ledger diagram showing prompt sequence, session attributes, and a rising session risk feature score." />
+      </figure>
+
       <figure id="audit">
         <figcaption>
-          <h2>6. Asynchronous Audit Context</h2>
+          <h2>7. Asynchronous Audit Context</h2>
           <p>
             Deployment timing changes when evidence becomes available, but the classifier core
             still consumes the same staged signals.
@@ -225,4 +237,3 @@
     </footer>
   </body>
 </html>
-

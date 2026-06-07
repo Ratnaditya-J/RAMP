@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Session Risk Ledger</title>
+  <desc id="desc">A diagram showing how multiple prompts can accumulate severity, drift across harm categories, and combine into a higher session-level risk signal.</desc>
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .ink { fill: #171717; }
+      .muted { fill: #5f6368; }
+      .line { stroke: #cfd6df; stroke-width: 3; fill: none; }
+      .dash { stroke: #cfd6df; stroke-width: 3; fill: none; stroke-dasharray: 12 10; }
+      .soft { fill: #f6f8fb; stroke: #d9dee7; stroke-width: 3; }
+      .safe { fill: #e8f7ef; stroke: #4b9b69; stroke-width: 3; }
+      .warn { fill: #fff4db; stroke: #d4951e; stroke-width: 3; }
+      .risk { fill: #ffe8e6; stroke: #cf4f45; stroke-width: 3; }
+      .blue { fill: #e8f1ff; stroke: #4f79c7; stroke-width: 3; }
+      .teal { fill: #e4f8f5; stroke: #0f766e; stroke-width: 3; }
+      .redText { fill: #b43d35; }
+      .orangeText { fill: #a56512; }
+      .blueText { fill: #365da8; }
+      .greenText { fill: #2f7b4c; }
+      .small { font: 500 24px Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .body { font: 500 30px Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .label { font: 700 30px Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .title { font: 800 56px Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: 0; }
+      .caption { font: 600 26px Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .num { font: 800 34px Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8d96a3" />
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1600" height="900" />
+
+  <text x="88" y="92" class="title ink">Session Risk Ledger</text>
+  <text x="92" y="136" class="caption muted">Risk can rise across turns even when each single prompt looks only borderline.</text>
+
+  <rect x="80" y="186" width="430" height="610" rx="18" class="soft" />
+  <text x="112" y="238" class="label ink">Prompt sequence</text>
+  <text x="112" y="274" class="small muted">single-turn signals</text>
+
+  <rect x="112" y="315" width="362" height="86" rx="18" class="safe" />
+  <text x="136" y="350" class="num greenText">T1</text>
+  <text x="196" y="350" class="body ink">educational frame</text>
+  <text x="196" y="381" class="small muted">low severity</text>
+
+  <rect x="112" y="430" width="362" height="86" rx="18" class="warn" />
+  <text x="136" y="465" class="num orangeText">T2</text>
+  <text x="196" y="465" class="body ink">narrower constraints</text>
+  <text x="196" y="496" class="small muted">same topic, sharper aim</text>
+
+  <rect x="112" y="545" width="362" height="86" rx="18" class="warn" />
+  <text x="136" y="580" class="num orangeText">T3</text>
+  <text x="196" y="580" class="body ink">reformulated ask</text>
+  <text x="196" y="611" class="small muted">boundary testing</text>
+
+  <rect x="112" y="660" width="362" height="86" rx="18" class="risk" />
+  <text x="136" y="695" class="num redText">T4</text>
+  <text x="196" y="695" class="body ink">missing piece</text>
+  <text x="196" y="726" class="small muted">completes risky chain</text>
+
+  <path d="M 510 358 C 540 358, 558 358, 590 358" class="line" marker-end="url(#arrow)" />
+  <path d="M 510 474 C 540 474, 558 474, 590 474" class="line" marker-end="url(#arrow)" />
+  <path d="M 510 588 C 540 588, 558 588, 590 588" class="line" marker-end="url(#arrow)" />
+  <path d="M 510 704 C 540 704, 558 704, 590 704" class="line" marker-end="url(#arrow)" />
+
+  <rect x="590" y="186" width="470" height="610" rx="18" class="soft" />
+  <text x="625" y="238" class="label ink">Session attributes</text>
+  <text x="625" y="274" class="small muted">features accumulated over turns</text>
+
+  <rect x="632" y="318" width="386" height="92" rx="16" class="risk" />
+  <text x="660" y="354" class="label redText">Severity accumulation</text>
+  <text x="660" y="386" class="small muted">harm score rises over last N turns</text>
+
+  <rect x="632" y="444" width="386" height="92" rx="16" class="blue" />
+  <text x="660" y="480" class="label blueText">Harm drift</text>
+  <text x="660" y="512" class="small muted">topic moves toward actionable risk</text>
+
+  <rect x="632" y="570" width="386" height="92" rx="16" class="warn" />
+  <text x="660" y="606" class="label orangeText">Prompt composition</text>
+  <text x="660" y="638" class="small muted">separate asks combine into intent</text>
+
+  <path d="M 1020 364 C 1070 364, 1090 364, 1132 364" class="line" marker-end="url(#arrow)" />
+  <path d="M 1020 490 C 1070 490, 1090 490, 1132 490" class="line" marker-end="url(#arrow)" />
+  <path d="M 1020 616 C 1070 616, 1090 616, 1132 616" class="line" marker-end="url(#arrow)" />
+
+  <rect x="1130" y="186" width="390" height="610" rx="18" class="soft" />
+  <text x="1164" y="238" class="label ink">Session risk feature</text>
+  <text x="1164" y="274" class="small muted">one stage result for fusion</text>
+
+  <rect x="1196" y="326" width="62" height="330" rx="31" fill="#eef1f5" stroke="#cfd6df" stroke-width="3" />
+  <rect x="1196" y="480" width="62" height="176" rx="31" fill="#cf4f45" />
+  <line x1="1180" y1="610" x2="1275" y2="610" class="dash" />
+  <line x1="1180" y1="526" x2="1275" y2="526" class="dash" />
+  <line x1="1180" y1="442" x2="1275" y2="442" class="dash" />
+  <text x="1298" y="449" class="small muted">high</text>
+  <text x="1298" y="533" class="small muted">medium</text>
+  <text x="1298" y="617" class="small muted">low</text>
+
+  <rect x="1164" y="694" width="290" height="62" rx="16" class="teal" />
+  <text x="1194" y="735" class="label ink">risk score: 0.71</text>
+
+  <path d="M 792 705 C 862 758, 1000 780, 1135 724" class="line" marker-end="url(#arrow)" />
+  <text x="660" y="740" class="small muted">session evidence becomes one input</text>
+</svg>
