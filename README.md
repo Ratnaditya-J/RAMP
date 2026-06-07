@@ -15,7 +15,9 @@ This repository starts with a small executable core:
 - an anytime scheduler that chooses early exit or the next feature
 - pluggable feature extractors with deterministic demo implementations
 - a first embedding-cluster feature scaffold with documented harm and benign contrast sub-clusters
-- a frozen gpt-oss hidden-state embedding source decision for centroid and activation-probe research
+- a frozen gpt-oss input-embedding source decision for centroid research
+- gpt-oss hidden-state activation extraction for probe research
+- a research artifact registry for benchmark corpora, embeddings, activations, and centroids
 - an agent tool/action gate
 - examples for single-turn evaluation, private-output review, asynchronous audit, and tool-use flows
 - tests for early allow, early block, disagreement tracking, and tool gating
@@ -64,6 +66,10 @@ src/ramp/          Runtime package
 tests/             Unit tests for the scaffold
 data/              Placeholder datasets and cluster assets
 ```
+
+Generated research artifacts are not committed. See
+[`docs/artifact-registry.md`](docs/artifact-registry.md) for the current source-of-record
+benchmark corpus, GPT-OSS input embeddings, activation extracts, and centroid build.
 
 ## Design Principle
 

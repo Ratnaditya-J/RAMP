@@ -9,6 +9,7 @@ embedding_source_id = gpt_oss_20b_input_embedding_v0.1
 model = openai/gpt-oss-20b
 runtime = RunPod GPU pod with PyTorch + Transformers
 artifact = data/embedding_source/gpt_oss_20b_input_embedding_v0_1.json
+registry = docs/artifact-registry.md
 ```
 
 ## Decision
@@ -74,6 +75,9 @@ Every output vector file must include:
 - source corpus version
 - taxonomy ID
 - creation timestamp
+
+The current source-of-record extraction run is recorded in
+[RAMP Artifact Registry](./artifact-registry.md).
 
 ## RunPod Setup
 
@@ -163,6 +167,11 @@ postprocess = L2-normalize centroid vector
 ```
 
 Target at least 25 reviewed examples per centroid before treating it as research-grade. A lower floor can be used for demos, but must be marked as such.
+
+For RAMP, benign near-neighbor centroids are contrastive anchors, not a balanced model of all
+benign language. It is acceptable and expected for the centroid set to contain more harmful
+subclusters than benign subclusters when the benign examples are intentionally selected because
+they sit close to harmful neighborhoods.
 
 Build centroids from an embedding JSONL artifact:
 
