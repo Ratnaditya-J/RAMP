@@ -110,3 +110,35 @@ For inferred windows:
 
 This lets RAMP compare explicit session classifiers against fallback sliding-window classifiers without hiding boundary uncertainty.
 
+## Session Severity
+
+Session risk should track harm severity separately from single-turn risk.
+
+A single turn may be ambiguous or moderate, while the session sequence can become high severity through accumulation. This matters when the user gradually assembles a harmful workflow across turns.
+
+Session severity should consider:
+
+- highest severity seen in any turn
+- whether severity is increasing across turns
+- whether benign-looking turns combine into a harmful workflow
+- whether the session adds evasion, optimization, targeting, procurement, or deployment details
+- whether the session crosses into high-impact domains such as child safety, self-harm methods, CBRN, infrastructure sabotage, or autonomous tool abuse
+
+Recommended metadata:
+
+```json
+{
+  "session_max_severity": "high",
+  "session_severity_trend": "increasing",
+  "severity_accumulation_score": 0.72,
+  "cross_turn_composition": [
+    "credential_theft",
+    "phishing_social_engineering",
+    "avoid_detection",
+    "automate_at_scale"
+  ],
+  "highest_severity_turn": "turn-4"
+}
+```
+
+This keeps prompt-level classification focused on local evidence while allowing session-level classification to measure accumulated severity and harm drift.

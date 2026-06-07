@@ -84,6 +84,7 @@
     "evasion": ["avoid_detection", "bypass_filters", "hide_activity", "encoding_or_obfuscation", "multilingual_evasion", "benign_synonym_substitution", "multi_turn_decomposition", "classifier_targeting", "output_obfuscation"],
     "optimization": ["increase_potency", "increase_yield", "increase_success_rate", "make_more_effective", "automate_at_scale", "personalize_targeting", "debug_harmful_artifact", "deployment_distribution_or_persistence"],
     "severity": ["safe", "controversial", "unsafe"],
+    "harm_severity": ["none", "low", "medium", "high", "critical"],
     "actionability": ["abstract", "contextual", "procedural", "operational", "deployment_ready"],
     "intent_confidence": ["unknown", "benign_likely", "ambiguous", "harmful_likely", "explicit_harmful"]
   }

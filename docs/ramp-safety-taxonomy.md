@@ -66,8 +66,44 @@ Overlays are not standalone harm domains. They modify the risk interpretation of
 | `evasion` | `avoid_detection`, `bypass_filters`, `hide_activity`, `encoding_or_obfuscation`, `multilingual_evasion`, `benign_synonym_substitution`, `multi_turn_decomposition`, `classifier_targeting`, `output_obfuscation` |
 | `optimization` | `increase_potency`, `increase_yield`, `increase_success_rate`, `make_more_effective`, `automate_at_scale`, `personalize_targeting`, `debug_harmful_artifact`, `deployment_distribution_or_persistence` |
 | `severity` | `safe`, `controversial`, `unsafe` |
+| `harm_severity` | `none`, `low`, `medium`, `high`, `critical` |
 | `actionability` | `abstract`, `contextual`, `procedural`, `operational`, `deployment_ready` |
 | `intent_confidence` | `unknown`, `benign_likely`, `ambiguous`, `harmful_likely`, `explicit_harmful` |
+
+## Harm Severity
+
+Harm severity is separate from topic, intent, and actionability.
+
+Not all harmful requests are equally severe. RAMP should keep severity as an explicit dimension so the system can distinguish low-impact policy issues from high-impact or irreversible harms.
+
+Severity is most useful at the session level:
+
+| Level | Meaning | Example signal |
+| --- | --- | --- |
+| `none` | No plausible harm from the span. | General education or benign support. |
+| `low` | Mild policy sensitivity or low-impact misuse if acted on. | Vague unsafe curiosity with no target or method. |
+| `medium` | Actionable harmful instruction, but limited target, scale, or consequence. | Procedural fraud, phishing, or weapon discussion without deployment detail. |
+| `high` | High-impact, targeted, scalable, or evasive harm. | Target-specific cyber abuse, CBRN misuse, severe harassment, or evasion. |
+| `critical` | Irreversible, mass-scale, child-safety, self-harm-method, CBRN, infrastructure, or autonomy/loss-of-control risk. | Multi-step operationalization of severe harm. |
+
+A single turn can carry severity, but the session feature should own accumulated severity:
+
+```text
+turn_severity =
+  base_domain_severity
+  + actionability_bonus
+  + evasion_bonus
+  + optimization_bonus
+  + target_specificity_bonus
+
+session_severity =
+  max(turn_severity)
+  + repeated_intent_bonus
+  + escalation_slope
+  + cross_subcluster_composition_score
+```
+
+This lets RAMP catch patterns where each turn is partial but the session becomes severe through accumulation.
 
 ## Runtime Feature Metadata
 
@@ -88,6 +124,7 @@ An embedding-risk feature result should preserve the taxonomy evidence:
     "ambiguous": []
   },
   "severity": "unsafe",
+  "harm_severity": "high",
   "actionability": "operational",
   "intent_confidence": "harmful_likely",
   "top_span": "..."
