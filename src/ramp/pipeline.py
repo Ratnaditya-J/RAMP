@@ -56,10 +56,20 @@ class RampPipeline:
         return stages
 
 
-def default_pipeline() -> RampPipeline:
+def prompt_risk_feature_from_backend(backend: str = "keyword") -> FeatureExtractor:
+    from ramp.features import KeywordPromptRiskFeature, Qwen3GuardPromptRiskFeature
+
+    normalized = backend.strip().lower()
+    if normalized == "keyword":
+        return KeywordPromptRiskFeature()
+    if normalized in {"qwen", "qwen3guard"}:
+        return Qwen3GuardPromptRiskFeature.from_env()
+    raise ValueError(f"unknown prompt risk backend: {backend}")
+
+
+def default_pipeline(prompt_risk_backend: str = "keyword") -> RampPipeline:
     from ramp.features import (
         KeywordOutputRiskFeature,
-        KeywordPromptRiskFeature,
         LexicalEmbeddingRiskFeature,
         RollingSessionDriftFeature,
         SideEffectToolActionRiskFeature,
@@ -67,7 +77,7 @@ def default_pipeline() -> RampPipeline:
     )
 
     feature_list = [
-        KeywordPromptRiskFeature(),
+        prompt_risk_feature_from_backend(prompt_risk_backend),
         LexicalEmbeddingRiskFeature(),
         RollingSessionDriftFeature(),
         StubActivationProbeFeature(),
