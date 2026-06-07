@@ -1,0 +1,70 @@
+{
+  "embedding_source_id": "gpt_oss_20b_hidden_state_v0.1",
+  "status": "frozen_for_centroid_v0",
+  "model": {
+    "provider": "OpenAI",
+    "huggingface_model_id": "openai/gpt-oss-20b",
+    "model_family": "gpt-oss",
+    "license": "Apache-2.0 subject to gpt-oss usage policy",
+    "role_in_ramp": "open-weight target model for span embeddings and activation probe research"
+  },
+  "runtime": {
+    "primary_environment": "RunPod GPU pod",
+    "serving_runtime_for_generation": "vLLM optional",
+    "extraction_runtime_for_embeddings_and_activations": "PyTorch + Transformers",
+    "why_not_vllm_for_extraction": "RAMP needs hidden states and activation hooks; OpenAI-compatible serving APIs are not the source of record for internal representations."
+  },
+  "extraction": {
+    "input_unit": "span_text",
+    "tokenization": "model tokenizer with chat/template disabled for isolated spans unless the experiment explicitly tests chat context",
+    "hidden_state_layer_policy": "use final transformer hidden state as centroid v0 default; persist all selected layer IDs in extraction metadata",
+    "pooling": "attention-mask mean pooling over non-padding tokens",
+    "normalization": "l2_normalize pooled vector before centroid construction",
+    "batching": "batch spans by token length and record batch size in metadata",
+    "precision": "bfloat16 preferred on supported GPUs; record actual dtype",
+    "max_sequence_length": 512,
+    "randomness": "disable sampling; set deterministic seeds where framework support allows"
+  },
+  "centroid_build": {
+    "corpus": "data/span_corpus/ramp_span_corpus_v0.jsonl plus later benchmark-derived spans",
+    "taxonomy": "data/taxonomy/ramp_taxonomy_v0_1.json",
+    "centroid_method_v0": "mean of normalized span vectors per domain/subcluster_role/subcluster_id, followed by l2 normalization",
+    "minimum_examples_per_centroid_target": 25,
+    "minimum_examples_per_centroid_floor_for_demo": 3,
+    "heldout_policy": "hold out benchmark source splits or source families before threshold calibration"
+  },
+  "activation_probe": {
+    "relationship_to_embedding_source": "use the same model checkout and tokenizer as the embedding source",
+    "candidate_layers": ["early", "middle", "late", "final"],
+    "probe_inputs": "same span corpus plus session-composed examples",
+    "metadata_requirement": "store layer IDs, hook names, tensor shapes, dtype, model revision, and tokenizer revision"
+  },
+  "runpod": {
+    "recommended_first_gpu": "single A100 80GB or H100 class GPU for comfortable extraction experiments",
+    "budget_gpu_option": "single 48GB GPU may be viable with quantization/offloading, but is not the frozen reference environment",
+    "persistent_volume_gb": 150,
+    "recommended_template": "RunPod PyTorch/Jupyter pod or custom CUDA image with Transformers",
+    "required_env": [
+      "HF_TOKEN",
+      "RAMP_EMBEDDING_SOURCE_CONFIG=/workspace/RAMP/data/embedding_source/gpt_oss_20b_hidden_state_v0_1.json",
+      "RAMP_EMBEDDING_OUTPUT_DIR=/workspace/ramp-artifacts/embeddings/gpt_oss_20b_hidden_state_v0_1"
+    ]
+  },
+  "provenance_required_in_outputs": [
+    "embedding_source_id",
+    "huggingface_model_id",
+    "model_revision",
+    "tokenizer_revision",
+    "transformers_version",
+    "torch_version",
+    "cuda_version",
+    "gpu_name",
+    "dtype",
+    "layer_ids",
+    "pooling",
+    "normalization",
+    "source_corpus_version",
+    "taxonomy_id",
+    "created_at"
+  ]
+}
