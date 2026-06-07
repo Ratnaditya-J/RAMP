@@ -5,7 +5,13 @@ import json
 from dataclasses import asdict
 from enum import Enum
 
-from ramp.features import DEFAULT_QWEN3GUARD_MODEL, FeatureInput, Qwen3GuardPromptRiskFeature
+from ramp.features import (
+    DEFAULT_QWEN3GUARD_MODEL,
+    EmbeddingClusterRiskFeature,
+    FeatureInput,
+    GPTOSSInputEmbeddingProvider,
+    Qwen3GuardPromptRiskFeature,
+)
 from ramp.pipeline import default_pipeline
 from ramp.risk_state import RiskState
 from ramp.schemas.provenance import RuntimeProvenance
@@ -57,4 +63,54 @@ def prompt_risk() -> None:
         FeatureInput(prompt=args.prompt),
         state,
     )
+    print(json.dumps(_encode(asdict(feature)), indent=2, sort_keys=True))
+
+
+def embedding_risk() -> None:
+    parser = argparse.ArgumentParser(description="Score one prompt with embedding centroids.")
+    parser.add_argument("prompt", help="Prompt text to score")
+    parser.add_argument("--centroids", required=True, help="Centroid artifact JSON path")
+    parser.add_argument(
+        "--provider",
+        choices=["gpt-oss", "keyword"],
+        default="gpt-oss",
+        help="Embedding provider to use. Defaults to the GPT-OSS input-embedding provider.",
+    )
+    parser.add_argument(
+        "--model",
+        default=None,
+        help="Hugging Face model ID or local model path for GPT-OSS scoring.",
+    )
+    parser.add_argument(
+        "--dtype",
+        default="auto",
+        choices=["auto", "float16", "bfloat16", "float32"],
+    )
+    parser.add_argument("--device-map", default="auto")
+    parser.add_argument("--max-length", type=int, default=512)
+    parser.add_argument("--trigger-margin", type=float, default=0.18)
+    args = parser.parse_args()
+
+    if args.provider == "gpt-oss":
+        embedding_provider = GPTOSSInputEmbeddingProvider(
+            model_id=args.model or "openai/gpt-oss-20b",
+            dtype=args.dtype,
+            device_map=args.device_map,
+            max_length=args.max_length,
+        )
+    else:
+        embedding_provider = None
+
+    request_id = "req_embedding_risk_cli"
+    session_id = "sess_embedding_risk_cli"
+    state = RiskState(
+        request_id=request_id,
+        session_id=session_id,
+        provenance=RuntimeProvenance(request_id=request_id, session_id=session_id),
+    )
+    feature = EmbeddingClusterRiskFeature.from_centroid_artifact(
+        args.centroids,
+        embedding_provider=embedding_provider,
+        trigger_margin=args.trigger_margin,
+    ).extract(FeatureInput(prompt=args.prompt), state)
     print(json.dumps(_encode(asdict(feature)), indent=2, sort_keys=True))

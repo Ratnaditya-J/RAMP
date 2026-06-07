@@ -6,6 +6,7 @@ from pathlib import Path
 
 from ramp.features import (
     EmbeddingClusterRiskFeature,
+    EmbeddingProvider,
     FeatureInput,
     SpanExtractor,
     cosine_similarity,
@@ -26,6 +27,16 @@ def make_state() -> RiskState:
         session_id=provenance.session_id,
         provenance=provenance,
     )
+
+
+class StaticEmbeddingProvider(EmbeddingProvider):
+    version = "static_embedding_provider_v0"
+
+    def __init__(self, vector: tuple[float, ...]) -> None:
+        self.vector = vector
+
+    def embed(self, texts: list[str]) -> list[tuple[float, ...]]:
+        return [self.vector for _ in texts]
 
 
 class EmbeddingRiskTest(unittest.TestCase):
@@ -98,6 +109,47 @@ class EmbeddingRiskTest(unittest.TestCase):
         self.assertEqual(clusters[0].kind, "harm")
         self.assertEqual(clusters[1].kind, "benign")
         self.assertEqual(clusters[0].version, "test_centroids")
+
+    def test_from_centroid_artifact_scores_live_provider_vectors(self) -> None:
+        artifact = {
+            "centroid_artifact_id": "runtime_test_centroids",
+            "centroids": [
+                {
+                    "domain": "cyber_abuse",
+                    "subcluster_role": "harmful",
+                    "subcluster_id": "vulnerability_exploitation",
+                    "count": 10,
+                    "centroid": [1.0, 0.0],
+                },
+                {
+                    "domain": "cyber_abuse",
+                    "subcluster_role": "benign_near_neighbor",
+                    "subcluster_id": "defensive_security",
+                    "count": 10,
+                    "centroid": [0.0, 1.0],
+                },
+            ],
+        }
+        artifact_path = Path(".pytest_cache/runtime_test_centroids.json")
+        artifact_path.parent.mkdir(exist_ok=True)
+        artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+        feature = EmbeddingClusterRiskFeature.from_centroid_artifact(
+            artifact_path,
+            embedding_provider=StaticEmbeddingProvider((1.0, 0.0)),
+            span_extractor=SpanExtractor(window_sizes=(), max_spans=1),
+        )
+
+        result = feature.extract(FeatureInput(prompt="probe this host"), make_state())
+
+        self.assertGreater(result.risk_score, 0.35)
+        self.assertEqual(result.harm_category, "cyber_abuse")
+        self.assertEqual(result.metadata["top_harmful_subcluster"], "vulnerability_exploitation")
+        self.assertEqual(result.metadata["top_benign_subcluster"], "defensive_security")
+        self.assertGreater(result.metadata["harm_minus_benign_margin"], 0.0)
+        self.assertEqual(
+            result.metadata["embedding_provider_version"],
+            "static_embedding_provider_v0",
+        )
 
 
 if __name__ == "__main__":
