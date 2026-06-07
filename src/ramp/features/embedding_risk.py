@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import json
 import math
 import re
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 
 from ramp.features.base import FeatureExtractor, FeatureInput
 from ramp.risk_state import RiskState
@@ -155,6 +157,26 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
         )
         self.span_extractor = span_extractor or SpanExtractor()
         self.trigger_margin = trigger_margin
+
+    @classmethod
+    def from_centroid_artifact(
+        cls,
+        path: str | Path,
+        *,
+        embedding_provider: EmbeddingProvider | None = None,
+        span_extractor: SpanExtractor | None = None,
+        trigger_margin: float = 0.18,
+    ) -> EmbeddingClusterRiskFeature:
+        clusters = load_centroid_artifact(path)
+        harm_clusters = [cluster for cluster in clusters if cluster.kind == "harm"]
+        benign_clusters = [cluster for cluster in clusters if cluster.kind == "benign"]
+        return cls(
+            embedding_provider=embedding_provider,
+            harm_clusters=harm_clusters,
+            benign_clusters=benign_clusters,
+            span_extractor=span_extractor,
+            trigger_margin=trigger_margin,
+        )
 
     def extract(self, feature_input: FeatureInput, state: RiskState) -> FeatureResult:
         spans = self.span_extractor.extract(feature_input.prompt)
@@ -383,6 +405,32 @@ def demo_benign_clusters() -> list[EmbeddingCluster]:
             subcluster_role="benign_near_neighbor",
         ),
     ]
+
+
+def load_centroid_artifact(path: str | Path) -> list[EmbeddingCluster]:
+    artifact_path = Path(path)
+    artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+    artifact_id = artifact["centroid_artifact_id"]
+    clusters: list[EmbeddingCluster] = []
+    for centroid in artifact["centroids"]:
+        role = centroid["subcluster_role"]
+        kind = "benign" if role == "benign_near_neighbor" else "harm"
+        clusters.append(
+            EmbeddingCluster(
+                cluster_id=centroid["subcluster_id"],
+                category=centroid["domain"],
+                kind=kind,
+                centroid=tuple(float(value) for value in centroid["centroid"]),
+                version=artifact_id,
+                description=(
+                    f"{centroid['domain']} / {role} / {centroid['subcluster_id']} "
+                    f"from {centroid['count']} spans"
+                ),
+                harm_domain=centroid["domain"],
+                subcluster_role=role,
+            )
+        )
+    return clusters
 
 
 def nearest_cluster(
