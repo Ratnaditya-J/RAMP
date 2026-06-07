@@ -102,6 +102,12 @@ def embedding_risk() -> None:
         default="cosine",
         help="Similarity space for centroid scoring.",
     )
+    parser.add_argument(
+        "--benign-contrast-mode",
+        choices=["domain_conditioned", "any_domain"],
+        default="domain_conditioned",
+        help="How to choose the benign contrast centroid for risk margins.",
+    )
     args = parser.parse_args()
 
     if args.provider == "gpt-oss":
@@ -127,5 +133,6 @@ def embedding_risk() -> None:
         span_extractor=SpanExtractor.from_mode(args.span_mode),
         trigger_margin=args.trigger_margin,
         similarity_mode=args.similarity_mode,
+        benign_contrast_mode=args.benign_contrast_mode,
     ).extract(FeatureInput(prompt=args.prompt), state)
     print(json.dumps(_encode(asdict(feature)), indent=2, sort_keys=True))

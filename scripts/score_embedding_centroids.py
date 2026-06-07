@@ -38,6 +38,11 @@ def parse_args() -> argparse.Namespace:
         choices=["cosine", "centered_cosine"],
         default="cosine",
     )
+    parser.add_argument(
+        "--benign-contrast-mode",
+        choices=["domain_conditioned", "any_domain"],
+        default="domain_conditioned",
+    )
     parser.add_argument("--max-records", type=int, default=None)
     return parser.parse_args()
 
@@ -87,30 +92,51 @@ def score_record(
     optimization: list[EmbeddingCluster],
     similarity_mode: str,
     corpus_mean_vector: Vector,
+    benign_contrast_mode: str,
 ) -> dict[str, Any]:
     vector = normalize(record["embedding"])
     if similarity_mode == "centered_cosine":
         vector = center_and_normalize(vector, corpus_mean_vector)
 
     harmful_cluster, harmful_similarity = nearest_cluster(vector, harmful)
-    benign_cluster, benign_similarity = nearest_cluster(vector, benign)
     evasion_cluster, evasion_similarity = nearest_cluster_or_none(vector, evasion)
     optimization_cluster, optimization_similarity = nearest_cluster_or_none(vector, optimization)
 
-    harmful_margin = harmful_similarity - benign_similarity
-    evasion_margin = evasion_similarity - benign_similarity
-    optimization_margin = optimization_similarity - benign_similarity
-    risk_margin = max(harmful_margin, evasion_margin, optimization_margin)
-    top_cluster = max(
-        [
-            (harmful_cluster, harmful_margin),
-            (evasion_cluster, evasion_margin),
-            (optimization_cluster, optimization_margin),
-        ],
-        key=lambda item: item[1],
-    )[0]
-    if top_cluster is None:
-        top_cluster = harmful_cluster
+    candidates = [
+        candidate_with_contrast(
+            harmful_cluster,
+            harmful_similarity,
+            vector,
+            benign,
+            benign_contrast_mode=benign_contrast_mode,
+        )
+    ]
+    if evasion_cluster is not None:
+        candidates.append(
+            candidate_with_contrast(
+                evasion_cluster,
+                evasion_similarity,
+                vector,
+                benign,
+                benign_contrast_mode=benign_contrast_mode,
+            )
+        )
+    if optimization_cluster is not None:
+        candidates.append(
+            candidate_with_contrast(
+                optimization_cluster,
+                optimization_similarity,
+                vector,
+                benign,
+                benign_contrast_mode=benign_contrast_mode,
+            )
+        )
+    top = max(candidates, key=lambda item: item["margin"])
+    harmful_candidate = candidates[0]
+    top_cluster = top["cluster"]
+    selected_benign = top["selected_benign"]
+    any_benign = top["any_benign"]
+    same_domain_benign = top["same_domain_benign"]
 
     return {
         "id": record.get("id"),
@@ -121,14 +147,24 @@ def score_record(
         "subcluster_id": record.get("subcluster_id"),
         "span_text": record.get("span_text"),
         "similarity_mode": similarity_mode,
+        "benign_contrast_mode": top["mode"],
         "harm_similarity": harmful_similarity,
-        "benign_similarity": benign_similarity,
+        "benign_similarity": top["selected_benign_similarity"],
         "evasion_similarity": evasion_similarity,
         "optimization_similarity": optimization_similarity,
-        "harm_minus_benign_margin": harmful_margin,
-        "risk_margin": risk_margin,
+        "harm_minus_benign_margin": harmful_candidate["margin"],
+        "risk_margin": top["margin"],
+        "same_domain_benign_cluster": (
+            same_domain_benign.cluster_id if same_domain_benign else None
+        ),
+        "same_domain_benign_similarity": top["same_domain_benign_similarity"],
+        "same_domain_margin": top["same_domain_margin"],
+        "any_domain_benign_cluster": any_benign.cluster_id,
+        "any_domain_benign_similarity": top["any_domain_benign_similarity"],
+        "any_domain_margin": top["any_domain_margin"],
+        "missing_same_domain_benign": same_domain_benign is None,
         "top_harm_cluster": harmful_cluster.cluster_id,
-        "top_benign_cluster": benign_cluster.cluster_id,
+        "top_benign_cluster": selected_benign.cluster_id,
         "top_evasion_cluster": evasion_cluster.cluster_id if evasion_cluster else None,
         "top_optimization_cluster": (
             optimization_cluster.cluster_id if optimization_cluster else None
@@ -136,6 +172,47 @@ def score_record(
         "top_risk_cluster": top_cluster.cluster_id,
         "top_risk_domain": top_cluster.harm_domain,
         "top_risk_role": top_cluster.subcluster_role,
+    }
+
+
+def candidate_with_contrast(
+    risk_cluster: EmbeddingCluster,
+    risk_similarity: float,
+    vector: Vector,
+    benign: list[EmbeddingCluster],
+    *,
+    benign_contrast_mode: str,
+) -> dict[str, Any]:
+    any_benign, any_similarity = nearest_cluster(vector, benign)
+    same_domain = [
+        cluster for cluster in benign if cluster.harm_domain == risk_cluster.harm_domain
+    ]
+    same_benign, same_similarity = nearest_cluster_or_none(vector, same_domain)
+    use_same_domain = benign_contrast_mode == "domain_conditioned" and same_benign is not None
+    selected_benign = same_benign if use_same_domain else any_benign
+    selected_similarity = same_similarity if use_same_domain else any_similarity
+    mode = (
+        "same_domain"
+        if use_same_domain
+        else "any_domain_fallback"
+        if benign_contrast_mode == "domain_conditioned"
+        else "any_domain"
+    )
+    return {
+        "cluster": risk_cluster,
+        "risk_similarity": risk_similarity,
+        "selected_benign": selected_benign,
+        "selected_benign_similarity": selected_similarity,
+        "mode": mode,
+        "same_domain_benign": same_benign,
+        "same_domain_benign_similarity": same_similarity,
+        "same_domain_margin": (
+            risk_similarity - same_similarity if same_benign is not None else None
+        ),
+        "any_benign": any_benign,
+        "any_domain_benign_similarity": any_similarity,
+        "any_domain_margin": risk_similarity - any_similarity,
+        "margin": risk_similarity - selected_similarity,
     }
 
 
@@ -147,7 +224,12 @@ def percentile(values: list[float], pct: float) -> float:
     return sorted_values[idx]
 
 
-def build_summary(scored: list[dict[str, Any]], *, similarity_mode: str) -> dict[str, Any]:
+def build_summary(
+    scored: list[dict[str, Any]],
+    *,
+    similarity_mode: str,
+    benign_contrast_mode: str,
+) -> dict[str, Any]:
     labels = Counter(str(row.get("label", "unknown")) for row in scored)
     roles = Counter(str(row.get("subcluster_role", "unknown")) for row in scored)
     by_label: dict[str, list[float]] = defaultdict(list)
@@ -169,6 +251,7 @@ def build_summary(scored: list[dict[str, Any]], *, similarity_mode: str) -> dict
 
     return {
         "similarity_mode": similarity_mode,
+        "benign_contrast_mode": benign_contrast_mode,
         "num_records": len(scored),
         "labels": dict(sorted(labels.items())),
         "subcluster_roles": dict(sorted(roles.items())),
@@ -220,11 +303,16 @@ def main() -> None:
                 optimization=optimization,
                 similarity_mode=args.similarity_mode,
                 corpus_mean_vector=corpus_mean_vector,
+                benign_contrast_mode=args.benign_contrast_mode,
             )
             scored.append(scored_record)
             output_file.write(json.dumps(scored_record, separators=(",", ":")) + "\n")
 
-    summary = build_summary(scored, similarity_mode=args.similarity_mode)
+    summary = build_summary(
+        scored,
+        similarity_mode=args.similarity_mode,
+        benign_contrast_mode=args.benign_contrast_mode,
+    )
     summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"wrote {len(scored)} scored rows to {output_path}")
     print(f"wrote summary to {summary_path}")
