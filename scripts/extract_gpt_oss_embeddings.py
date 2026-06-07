@@ -17,6 +17,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model", default=None, help="Override Hugging Face model ID.")
     parser.add_argument("--batch-size", type=int, default=4)
     parser.add_argument("--max-length", type=int, default=None)
+    parser.add_argument("--progress-every", type=int, default=10, help="Print every N batches.")
+    parser.add_argument("--resume", action="store_true", help="Skip IDs already present in output.")
+    parser.add_argument(
+        "--representation",
+        default="input_embedding",
+        choices=["input_embedding", "hidden_state"],
+        help="Extract pooled input embedding vectors or pooled hidden-state vectors.",
+    )
     parser.add_argument("--layer", default="final", help="Hidden-state layer index or 'final'.")
     parser.add_argument("--device-map", default="auto")
     parser.add_argument(
@@ -35,6 +43,18 @@ def batched(records: list[dict[str, Any]], batch_size: int) -> list[list[dict[st
     return [records[idx : idx + batch_size] for idx in range(0, len(records), batch_size)]
 
 
+def existing_ids(path: Path) -> set[str]:
+    if not path.exists():
+        return set()
+    ids: set[str] = set()
+    with path.open(encoding="utf-8") as input_file:
+        for line in input_file:
+            if not line.strip():
+                continue
+            ids.add(str(json.loads(line)["id"]))
+    return ids
+
+
 def torch_dtype(dtype_name: str) -> Any:
     import torch
 
@@ -47,11 +67,11 @@ def torch_dtype(dtype_name: str) -> Any:
     }[dtype_name]
 
 
-def mean_pool_hidden_state(hidden_state: Any, attention_mask: Any) -> Any:
+def mean_pool_vectors(vectors: Any, attention_mask: Any) -> Any:
     import torch
 
-    mask = attention_mask.unsqueeze(-1).to(hidden_state.dtype)
-    summed = (hidden_state * mask).sum(dim=1)
+    mask = attention_mask.unsqueeze(-1).to(vectors.dtype)
+    summed = (vectors * mask).sum(dim=1)
     counts = mask.sum(dim=1).clamp(min=1)
     pooled = summed / counts
     return torch.nn.functional.normalize(pooled.float(), p=2, dim=1)
@@ -90,6 +110,10 @@ def main() -> None:
 
     config = json.loads(config_path.read_text(encoding="utf-8"))
     records = load_jsonl(corpus_path)
+    if args.resume:
+        completed_ids = existing_ids(output_path)
+        records = [record for record in records if str(record["id"]) not in completed_ids]
+        print(f"resume=true skipped {len(completed_ids)} existing rows")
     model_id = args.model or config["model"]["huggingface_model_id"]
     max_length = args.max_length or config["extraction"]["max_sequence_length"]
 
@@ -101,12 +125,13 @@ def main() -> None:
         model_id,
         device_map=args.device_map,
         torch_dtype=torch_dtype(args.dtype),
-        output_hidden_states=True,
+        output_hidden_states=args.representation == "hidden_state",
     )
     model.eval()
 
     provenance = {
         "embedding_source_id": config["embedding_source_id"],
+        "representation": args.representation,
         "huggingface_model_id": model_id,
         "model_revision": getattr(model.config, "_commit_hash", None),
         "tokenizer_revision": getattr(tokenizer, "_commit_hash", None),
@@ -114,7 +139,7 @@ def main() -> None:
         "torch_version": torch.__version__,
         "python_version": platform.python_version(),
         "dtype": args.dtype,
-        "layer_ids": [args.layer],
+        "layer_ids": [args.layer] if args.representation == "hidden_state" else [],
         "pooling": config["extraction"]["pooling"],
         "normalization": config["extraction"]["normalization"],
         "source_corpus_version": corpus_path.name,
@@ -123,8 +148,10 @@ def main() -> None:
         **cuda_metadata(),
     }
 
-    with output_path.open("w", encoding="utf-8") as output_file, torch.inference_mode():
-        for batch in batched(records, args.batch_size):
+    output_mode = "a" if args.resume else "w"
+    batches = batched(records, args.batch_size)
+    with output_path.open(output_mode, encoding="utf-8") as output_file, torch.inference_mode():
+        for batch_idx, batch in enumerate(batches, start=1):
             texts = [record["span_text"] for record in batch]
             encoded = tokenizer(
                 texts,
@@ -133,10 +160,18 @@ def main() -> None:
                 max_length=max_length,
                 return_tensors="pt",
             )
-            encoded = {key: value.to(model.device) for key, value in encoded.items()}
-            outputs = model(**encoded, output_hidden_states=True, use_cache=False)
-            hidden_state = selected_hidden_state(outputs, args.layer)
-            vectors = mean_pool_hidden_state(hidden_state, encoded["attention_mask"])
+            if args.representation == "input_embedding":
+                input_embeddings = model.get_input_embeddings()
+                embedding_device = input_embeddings.weight.device
+                input_ids = encoded["input_ids"].to(embedding_device)
+                attention_mask = encoded["attention_mask"].to(embedding_device)
+                token_vectors = input_embeddings(input_ids)
+                vectors = mean_pool_vectors(token_vectors, attention_mask)
+            else:
+                encoded = {key: value.to(model.device) for key, value in encoded.items()}
+                outputs = model(**encoded, output_hidden_states=True, use_cache=False)
+                hidden_state = selected_hidden_state(outputs, args.layer)
+                vectors = mean_pool_vectors(hidden_state, encoded["attention_mask"])
 
             for record, vector in zip(batch, vectors.cpu().tolist(), strict=True):
                 output_file.write(
@@ -158,6 +193,10 @@ def main() -> None:
                     )
                     + "\n"
                 )
+
+            if args.progress_every > 0 and batch_idx % args.progress_every == 0:
+                done = min(batch_idx * args.batch_size, len(records))
+                print(f"progress {done}/{len(records)} rows")
 
     print(f"wrote {len(records)} embeddings to {output_path}")
 
