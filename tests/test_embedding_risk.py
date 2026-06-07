@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import json
 import unittest
+from pathlib import Path
 
 from ramp.features import (
     EmbeddingClusterRiskFeature,
     FeatureInput,
     SpanExtractor,
     cosine_similarity,
+    load_centroid_artifact,
 )
 from ramp.risk_state import RiskState
 from ramp.schemas.feature_result import FeatureStage
@@ -64,6 +67,37 @@ class EmbeddingRiskTest(unittest.TestCase):
     def test_cosine_similarity_rejects_dimension_mismatch(self) -> None:
         with self.assertRaises(ValueError):
             cosine_similarity((1.0, 0.0), (1.0,))
+
+    def test_load_centroid_artifact_maps_roles_to_cluster_kinds(self) -> None:
+        artifact = {
+            "centroid_artifact_id": "test_centroids",
+            "centroids": [
+                {
+                    "domain": "cyber_abuse",
+                    "subcluster_role": "harmful",
+                    "subcluster_id": "credential_theft",
+                    "count": 2,
+                    "centroid": [1.0, 0.0],
+                },
+                {
+                    "domain": "cyber_abuse",
+                    "subcluster_role": "benign_near_neighbor",
+                    "subcluster_id": "defensive_security",
+                    "count": 2,
+                    "centroid": [0.0, 1.0],
+                },
+            ],
+        }
+        artifact_path = Path(".pytest_cache/test_centroids.json")
+        artifact_path.parent.mkdir(exist_ok=True)
+        artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+
+        clusters = load_centroid_artifact(artifact_path)
+
+        self.assertEqual(len(clusters), 2)
+        self.assertEqual(clusters[0].kind, "harm")
+        self.assertEqual(clusters[1].kind, "benign")
+        self.assertEqual(clusters[0].version, "test_centroids")
 
 
 if __name__ == "__main__":

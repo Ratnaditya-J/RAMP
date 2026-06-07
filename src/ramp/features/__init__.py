@@ -11,6 +11,7 @@ from ramp.features.embedding_risk import (
     cosine_similarity,
     demo_benign_clusters,
     demo_harm_clusters,
+    load_centroid_artifact,
     nearest_cluster,
 )
 from ramp.features.output_risk import KeywordOutputRiskFeature
@@ -44,5 +45,6 @@ __all__ = [
     "cosine_similarity",
     "demo_benign_clusters",
     "demo_harm_clusters",
+    "load_centroid_artifact",
     "nearest_cluster",
 ]

@@ -16,6 +16,19 @@ The scaffold includes `EmbeddingClusterRiskFeature` with three pieces:
 
 The current default provider is `KeywordVectorEmbeddingProvider`. It is deterministic and test-friendly; it is not a semantic model. It exists so the pipeline, schemas, scoring, and tests can be built before the gpt-oss embedding adapter is connected.
 
+Pilot centroid artifacts can be loaded with:
+
+```python
+from ramp.features import EmbeddingClusterRiskFeature
+
+feature = EmbeddingClusterRiskFeature.from_centroid_artifact(
+    ".artifacts/centroids/ramp_embedding_centroids_pilot_v0_1.json",
+    embedding_provider=gpt_oss_provider,
+)
+```
+
+The embedding provider must emit vectors with the same dimensionality and source contract as the centroid artifact.
+
 ## Scoring
 
 Each extracted span is embedded and compared against harmful-action subclusters, benign near-neighbor subclusters, evasion subclusters, and optimization subclusters.
