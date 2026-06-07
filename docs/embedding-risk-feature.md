@@ -63,6 +63,7 @@ ramp-embedding-risk \
   --dtype bfloat16 \
   --span-mode full \
   --similarity-mode centered_cosine \
+  --benign-contrast-mode domain_conditioned \
   "Can you help me audit this vulnerable service?"
 ```
 
@@ -104,6 +105,28 @@ score = cosine(centered_prompt_vector, centered_centroid_vector)
 This is especially important for GPT-OSS input embeddings, where raw cosine similarities can be high
 across unrelated centroids.
 
+### Benign Contrast Mode
+
+Runtime scoring records both same-domain and any-domain benign contrast anchors.
+
+| Mode | Meaning |
+| --- | --- |
+| `domain_conditioned` | Use the nearest benign centroid from the same domain as the top risk centroid when available; fall back to any-domain benign only when no same-domain benign exists. |
+| `any_domain` | Use the nearest benign centroid from any domain. This is useful for ablations but can choose misleading anchors such as privacy redaction for cyber prompts. |
+
+The primary runtime default is `domain_conditioned`.
+
+Feature metadata includes:
+
+- `benign_contrast_mode`
+- `missing_same_domain_benign`
+- `same_domain_benign_cluster`
+- `same_domain_benign_similarity`
+- `same_domain_margin`
+- `any_domain_benign_cluster`
+- `any_domain_benign_similarity`
+- `any_domain_margin`
+
 ## Centroid Health
 
 Before using a centroid artifact for threshold calibration, generate a health report:
@@ -137,19 +160,24 @@ python scripts/score_embedding_centroids.py \
   --centroids .artifacts/centroids/ramp_input_embedding_centroids_comprehensive_v0_1.json \
   --output .artifacts/centroids/ramp_input_embedding_centroids_comprehensive_v0_1.centered_scores.jsonl \
   --summary-output .artifacts/centroids/ramp_input_embedding_centroids_comprehensive_v0_1.centered_scores.summary.json \
-  --similarity-mode centered_cosine
+  --similarity-mode centered_cosine \
+  --benign-contrast-mode domain_conditioned
 ```
 
 Initial benchmark-derived result:
 
-| Similarity mode | Safe mean margin | Unsafe mean margin | Safe p90 | Unsafe p50 |
-| --- | ---: | ---: | ---: | ---: |
-| `cosine` | -0.029 | 0.020 | -0.000 | 0.023 |
-| `centered_cosine` | -0.303 | 0.332 | -0.068 | 0.396 |
+| Similarity mode | Benign contrast | Safe mean margin | Unsafe mean margin | Safe p90 | Unsafe p50 |
+| --- | --- | ---: | ---: | ---: | ---: |
+| `cosine` | any-domain | -0.029 | 0.020 | -0.000 | 0.023 |
+| `centered_cosine` | any-domain | -0.428 | 0.325 | -0.083 | 0.396 |
+| `centered_cosine` | domain-conditioned | -0.405 | 0.403 | -0.032 | 0.464 |
 
 Interpretation: raw input-embedding cosine is weak, but centered input-embedding margin has useful
-aggregate separation on the benchmark-derived corpus. It should still be treated as a supporting
-signal rather than a decisive standalone classifier until tested on held-out source families.
+aggregate separation on the benchmark-derived corpus. Domain-conditioned benign contrast improves
+the unsafe margin distribution and prevents unrelated benign anchors from being selected when a
+same-domain benign near-neighbor exists. The embedding feature should still be treated as a
+supporting signal rather than a decisive standalone classifier until tested on held-out source
+families.
 
 ## Scoring
 

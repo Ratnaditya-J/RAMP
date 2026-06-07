@@ -267,12 +267,18 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
         trigger_margin: float = 0.18,
         similarity_mode: str = "cosine",
         corpus_mean_vector: Vector | None = None,
+        benign_contrast_mode: str = "domain_conditioned",
     ) -> None:
         if similarity_mode not in {"cosine", "centered_cosine"}:
             raise ValueError("similarity_mode must be 'cosine' or 'centered_cosine'")
+        if benign_contrast_mode not in {"domain_conditioned", "any_domain"}:
+            raise ValueError(
+                "benign_contrast_mode must be 'domain_conditioned' or 'any_domain'"
+            )
         self.embedding_provider = embedding_provider or KeywordVectorEmbeddingProvider()
         self.similarity_mode = similarity_mode
         self.corpus_mean_vector = corpus_mean_vector
+        self.benign_contrast_mode = benign_contrast_mode
         self.harm_clusters = self._prepare_clusters(tuple(harm_clusters or demo_harm_clusters()))
         self.benign_clusters = self._prepare_clusters(
             tuple(benign_clusters or demo_benign_clusters())
@@ -320,6 +326,7 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
         span_extractor: SpanExtractor | None = None,
         trigger_margin: float = 0.18,
         similarity_mode: str = "cosine",
+        benign_contrast_mode: str = "domain_conditioned",
     ) -> EmbeddingClusterRiskFeature:
         artifact = load_centroid_artifact_json(path)
         corpus_mean_vector = tuple(float(value) for value in artifact.get("corpus_mean_vector", ()))
@@ -336,6 +343,7 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
             trigger_margin=trigger_margin,
             similarity_mode=similarity_mode,
             corpus_mean_vector=corpus_mean_vector,
+            benign_contrast_mode=benign_contrast_mode,
         )
 
     def extract(self, feature_input: FeatureInput, state: RiskState) -> FeatureResult:
@@ -390,10 +398,22 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
                 ),
                 "top_harm_cluster": top_risk_cluster.cluster_id,
                 "top_benign_cluster": top.benign_cluster.cluster_id,
+                "benign_contrast_mode": top.benign_contrast_mode,
+                "missing_same_domain_benign": top.missing_same_domain_benign,
                 "harm_similarity": top.harm_similarity,
                 "benign_similarity": top.benign_similarity,
                 "harm_minus_benign_margin": top.margin,
                 "risk_margin": top.risk_margin,
+                "same_domain_benign_cluster": (
+                    top.same_domain_benign_cluster.cluster_id
+                    if top.same_domain_benign_cluster
+                    else None
+                ),
+                "same_domain_benign_similarity": top.same_domain_benign_similarity,
+                "same_domain_margin": top.same_domain_margin,
+                "any_domain_benign_cluster": top.any_domain_benign_cluster.cluster_id,
+                "any_domain_benign_similarity": top.any_domain_benign_similarity,
+                "any_domain_margin": top.any_domain_margin,
                 "evasion_similarity": top.evasion_similarity,
                 "optimization_similarity": top.optimization_similarity,
                 "evasion_activated": (
@@ -408,6 +428,7 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
                 "num_triggered_spans": len(triggered),
                 "trigger_margin": self.trigger_margin,
                 "similarity_mode": self.similarity_mode,
+                "configured_benign_contrast_mode": self.benign_contrast_mode,
                 "span_extractor": {
                     "include_full_prompt": self.span_extractor.include_full_prompt,
                     "include_sentences": self.span_extractor.include_sentences,
@@ -431,7 +452,6 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
     def _score_span(self, span: TextSpan, vector: Vector) -> SpanClusterScore:
         score_vector = self._score_vector(vector)
         harm_cluster, harm_similarity = nearest_cluster(score_vector, self.harmful_action_clusters)
-        benign_cluster, benign_similarity = nearest_cluster(score_vector, self.benign_clusters)
         evasion_cluster, evasion_similarity = nearest_cluster_or_none(
             score_vector, self.evasion_clusters
         )
@@ -439,17 +459,67 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
             score_vector,
             self.optimization_clusters,
         )
+        harmful_contrast = self._benign_contrast_for(
+            harm_cluster,
+            harm_similarity,
+            score_vector,
+        )
+        evasion_contrast = (
+            self._benign_contrast_for(evasion_cluster, evasion_similarity, score_vector)
+            if evasion_cluster
+            else None
+        )
+        optimization_contrast = (
+            self._benign_contrast_for(
+                optimization_cluster,
+                optimization_similarity,
+                score_vector,
+            )
+            if optimization_cluster
+            else None
+        )
+        top_candidate = max(
+            [
+                RiskCandidate(harm_cluster, harm_similarity, harmful_contrast),
+                *(
+                    [RiskCandidate(evasion_cluster, evasion_similarity, evasion_contrast)]
+                    if evasion_cluster and evasion_contrast
+                    else []
+                ),
+                *(
+                    [
+                        RiskCandidate(
+                            optimization_cluster,
+                            optimization_similarity,
+                            optimization_contrast,
+                        )
+                    ]
+                    if optimization_cluster and optimization_contrast
+                    else []
+                ),
+            ],
+            key=lambda candidate: candidate.margin,
+        )
         return SpanClusterScore(
             span=span,
             harmful_cluster=harm_cluster,
-            benign_cluster=benign_cluster,
+            top_risk_cluster_value=top_candidate.cluster,
+            benign_cluster=top_candidate.contrast.selected_cluster,
             evasion_cluster=evasion_cluster,
             optimization_cluster=optimization_cluster,
             harm_similarity=harm_similarity,
-            benign_similarity=benign_similarity,
+            benign_similarity=top_candidate.contrast.selected_similarity,
             evasion_similarity=evasion_similarity,
             optimization_similarity=optimization_similarity,
-            margin=harm_similarity - benign_similarity,
+            margin=harmful_contrast.margin,
+            risk_margin_value=top_candidate.margin,
+            benign_contrast_mode=top_candidate.contrast.mode,
+            same_domain_benign_cluster=top_candidate.contrast.same_domain_cluster,
+            same_domain_benign_similarity=top_candidate.contrast.same_domain_similarity,
+            same_domain_margin=top_candidate.contrast.same_domain_margin,
+            any_domain_benign_cluster=top_candidate.contrast.any_domain_cluster,
+            any_domain_benign_similarity=top_candidate.contrast.any_domain_similarity,
+            any_domain_margin=top_candidate.contrast.any_domain_margin,
         )
 
     def _score_vector(self, vector: Vector) -> Vector:
@@ -459,6 +529,42 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
         if self.corpus_mean_vector is None:
             raise ValueError("centered_cosine requires a corpus mean vector")
         return center_and_normalize(normalized, self.corpus_mean_vector)
+
+    def _benign_contrast_for(
+        self,
+        risk_cluster: EmbeddingCluster,
+        risk_similarity: float,
+        vector: Vector,
+    ) -> BenignContrast:
+        any_cluster, any_similarity = nearest_cluster(vector, self.benign_clusters)
+        same_domain_clusters = [
+            cluster
+            for cluster in self.benign_clusters
+            if cluster.harm_domain == risk_cluster.harm_domain
+        ]
+        same_cluster, same_similarity = nearest_cluster_or_none(vector, same_domain_clusters)
+        use_same_domain = (
+            self.benign_contrast_mode == "domain_conditioned" and same_cluster is not None
+        )
+        selected_cluster = same_cluster if use_same_domain else any_cluster
+        selected_similarity = same_similarity if use_same_domain else any_similarity
+        mode = (
+            "same_domain"
+            if use_same_domain
+            else "any_domain_fallback"
+            if self.benign_contrast_mode == "domain_conditioned"
+            else "any_domain"
+        )
+        return BenignContrast(
+            selected_cluster=selected_cluster,
+            selected_similarity=selected_similarity,
+            mode=mode,
+            same_domain_cluster=same_cluster,
+            same_domain_similarity=same_similarity,
+            any_domain_cluster=any_cluster,
+            any_domain_similarity=any_similarity,
+            risk_similarity=risk_similarity,
+        )
 
     def _risk_score(
         self,
@@ -477,9 +583,47 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
 
 
 @dataclass(frozen=True)
+class BenignContrast:
+    selected_cluster: EmbeddingCluster
+    selected_similarity: float
+    mode: str
+    same_domain_cluster: EmbeddingCluster | None
+    same_domain_similarity: float
+    any_domain_cluster: EmbeddingCluster
+    any_domain_similarity: float
+    risk_similarity: float
+
+    @property
+    def margin(self) -> float:
+        return self.risk_similarity - self.selected_similarity
+
+    @property
+    def same_domain_margin(self) -> float | None:
+        if self.same_domain_cluster is None:
+            return None
+        return self.risk_similarity - self.same_domain_similarity
+
+    @property
+    def any_domain_margin(self) -> float:
+        return self.risk_similarity - self.any_domain_similarity
+
+
+@dataclass(frozen=True)
+class RiskCandidate:
+    cluster: EmbeddingCluster
+    similarity: float
+    contrast: BenignContrast
+
+    @property
+    def margin(self) -> float:
+        return self.contrast.margin
+
+
+@dataclass(frozen=True)
 class SpanClusterScore:
     span: TextSpan
     harmful_cluster: EmbeddingCluster
+    top_risk_cluster_value: EmbeddingCluster
     benign_cluster: EmbeddingCluster
     evasion_cluster: EmbeddingCluster | None
     optimization_cluster: EmbeddingCluster | None
@@ -488,31 +632,25 @@ class SpanClusterScore:
     evasion_similarity: float
     optimization_similarity: float
     margin: float
+    risk_margin_value: float
+    benign_contrast_mode: str
+    same_domain_benign_cluster: EmbeddingCluster | None
+    same_domain_benign_similarity: float
+    same_domain_margin: float | None
+    any_domain_benign_cluster: EmbeddingCluster
+    any_domain_benign_similarity: float
+    any_domain_margin: float
 
     @property
     def risk_margin(self) -> float:
-        return max(
-            self.margin,
-            self.evasion_similarity - self.benign_similarity,
-            self.optimization_similarity - self.benign_similarity,
-        )
+        return self.risk_margin_value
+
+    @property
+    def missing_same_domain_benign(self) -> bool:
+        return self.same_domain_benign_cluster is None
 
     def top_risk_cluster(self) -> EmbeddingCluster:
-        candidates = [
-            (self.harmful_cluster, self.margin),
-        ]
-        if self.evasion_cluster is not None:
-            candidates.append(
-                (self.evasion_cluster, self.evasion_similarity - self.benign_similarity)
-            )
-        if self.optimization_cluster is not None:
-            candidates.append(
-                (
-                    self.optimization_cluster,
-                    self.optimization_similarity - self.benign_similarity,
-                )
-            )
-        return max(candidates, key=lambda item: item[1])[0]
+        return self.top_risk_cluster_value
 
 
 def demo_harm_clusters() -> list[EmbeddingCluster]:

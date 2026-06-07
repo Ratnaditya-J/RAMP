@@ -69,7 +69,9 @@ class EmbeddingRiskTest(unittest.TestCase):
 
         self.assertEqual(result.stage, FeatureStage.EMBEDDING_RISK)
         self.assertLess(result.risk_score, 0.35)
-        self.assertEqual(result.metadata["top_benign_cluster"], "general_safety")
+        self.assertEqual(result.metadata["top_benign_cluster"], "defensive_security")
+        self.assertEqual(result.metadata["benign_contrast_mode"], "same_domain")
+        self.assertEqual(result.metadata["same_domain_benign_cluster"], "defensive_security")
         self.assertLess(result.metadata["harm_minus_benign_margin"], 0.0)
 
     def test_evasion_span_triggers_evasion_activation(self) -> None:
@@ -161,6 +163,50 @@ class EmbeddingRiskTest(unittest.TestCase):
             result.metadata["embedding_provider_version"],
             "static_embedding_provider_v0",
         )
+
+    def test_domain_conditioned_contrast_prefers_same_domain_benign(self) -> None:
+        artifact = {
+            "centroid_artifact_id": "domain_conditioned_test_centroids",
+            "centroids": [
+                {
+                    "domain": "cyber_abuse",
+                    "subcluster_role": "harmful",
+                    "subcluster_id": "vulnerability_exploitation",
+                    "count": 10,
+                    "centroid": [1.0, 0.0],
+                },
+                {
+                    "domain": "cyber_abuse",
+                    "subcluster_role": "benign_near_neighbor",
+                    "subcluster_id": "defensive_security",
+                    "count": 10,
+                    "centroid": [0.0, 1.0],
+                },
+                {
+                    "domain": "privacy_identity_and_secrets",
+                    "subcluster_role": "benign_near_neighbor",
+                    "subcluster_id": "redaction",
+                    "count": 10,
+                    "centroid": [1.0, 0.0],
+                },
+            ],
+        }
+        artifact_path = Path(".pytest_cache/domain_conditioned_test_centroids.json")
+        artifact_path.parent.mkdir(exist_ok=True)
+        artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+        feature = EmbeddingClusterRiskFeature.from_centroid_artifact(
+            artifact_path,
+            embedding_provider=StaticEmbeddingProvider((1.0, 0.0)),
+            span_extractor=SpanExtractor.from_mode("full"),
+            benign_contrast_mode="domain_conditioned",
+        )
+
+        result = feature.extract(FeatureInput(prompt="probe this host"), make_state())
+
+        self.assertEqual(result.metadata["top_benign_cluster"], "defensive_security")
+        self.assertEqual(result.metadata["benign_contrast_mode"], "same_domain")
+        self.assertEqual(result.metadata["same_domain_benign_cluster"], "defensive_security")
+        self.assertEqual(result.metadata["any_domain_benign_cluster"], "redaction")
 
     def test_centered_cosine_uses_artifact_mean_vector(self) -> None:
         artifact = {

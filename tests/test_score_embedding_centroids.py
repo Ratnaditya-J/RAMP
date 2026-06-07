@@ -91,6 +91,8 @@ def test_score_embedding_centroids_script_outputs_rows_and_summary(tmp_path: Pat
     assert len(rows) == 2
     assert rows[0]["top_harm_cluster"] == "vulnerability_exploitation"
     assert rows[1]["top_benign_cluster"] == "defensive_security"
+    assert rows[0]["benign_contrast_mode"] == "same_domain"
     assert report["num_records"] == 2
     assert report["labels"] == {"safe": 1, "unsafe": 1}
     assert report["similarity_mode"] == "centered_cosine"
+    assert report["benign_contrast_mode"] == "domain_conditioned"
