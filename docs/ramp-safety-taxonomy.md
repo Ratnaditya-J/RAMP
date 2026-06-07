@@ -155,6 +155,12 @@ It is a synthetic, non-instructional span corpus used to validate schema and tax
 - `subcluster_id`
 - `label`
 - `source`
+- `source_record_id`
+- `source_record_hash`
+- `span_derivation`
+- `raw_prompt_stored`
+- `license`
+- `safety_redaction`
 - `policy_mapping`
 - `harm_severity`
 - `actionability`

@@ -9,6 +9,12 @@ The corpus is span-first, not prompt-first. Each record represents one local evi
 - `subcluster_id`
 - `label`
 - `source`
+- `source_record_id`
+- `source_record_hash`
+- `span_derivation`
+- `raw_prompt_stored`
+- `license`
+- `safety_redaction`
 - `policy_mapping`
 - `harm_severity`
 - `actionability`
@@ -31,3 +37,14 @@ Recommended extraction workflow:
 4. Map each span to the RAMP taxonomy: `domain`, `subcluster_role`, `subcluster_id`, `label`, `harm_severity`, `actionability`, and `intent_confidence`.
 5. Add hard benign near-neighbors from benchmarks such as XSTest and WildGuardMix so centroid training does not learn topic sensitivity as harm.
 6. Keep raw dangerous examples out of the public repository unless they are explicitly safe to redistribute and necessary for reproducibility.
+
+Recommended provenance fields:
+
+| Field | Meaning |
+| --- | --- |
+| `source_record_id` | Upstream benchmark row ID, behavior ID, or local synthetic ID. |
+| `source_record_hash` | SHA-256 hash of the upstream record or stored span. |
+| `span_derivation` | `verbatim_safe_span`, `redacted_span`, `abstracted_by_reviewer`, or `synthetic_non_instructional`. |
+| `raw_prompt_stored` | Whether the raw benchmark prompt/span is checked into this repository. |
+| `license` | Dataset license or local synthetic license note. |
+| `safety_redaction` | `none`, `redacted`, `abstracted`, or `restricted`. |

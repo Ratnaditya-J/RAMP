@@ -16,6 +16,12 @@ REQUIRED_FIELDS = {
     "subcluster_id",
     "label",
     "source",
+    "source_record_id",
+    "source_record_hash",
+    "span_derivation",
+    "raw_prompt_stored",
+    "license",
+    "safety_redaction",
     "policy_mapping",
     "harm_severity",
     "actionability",
@@ -68,6 +74,17 @@ def test_span_corpus_records_match_taxonomy() -> None:
         assert isinstance(record["policy_mapping"], list)
         assert record["policy_mapping"]
         assert record["source"] in source_ids
+        assert record["source_record_id"]
+        assert record["source_record_hash"].startswith("sha256:")
+        assert record["span_derivation"] in {
+            "synthetic_non_instructional",
+            "verbatim_safe_span",
+            "redacted_span",
+            "abstracted_by_reviewer",
+        }
+        assert isinstance(record["raw_prompt_stored"], bool)
+        assert record["license"]
+        assert record["safety_redaction"] in {"none", "redacted", "abstracted", "restricted"}
 
         domain = domain_map[record["domain"]]
         role = record["subcluster_role"]
