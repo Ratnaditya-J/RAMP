@@ -106,6 +106,22 @@ pip install -U transformers accelerate torch
 
 For generation-only smoke tests, vLLM can serve `openai/gpt-oss-20b`. For hidden-state extraction, use Transformers.
 
+## Extraction Command
+
+From the RunPod pod:
+
+```bash
+python scripts/extract_gpt_oss_embeddings.py \
+  --config data/embedding_source/gpt_oss_20b_hidden_state_v0_1.json \
+  --corpus data/span_corpus/ramp_span_corpus_v0.jsonl \
+  --output /workspace/ramp-artifacts/embeddings/gpt_oss_20b_hidden_state_v0_1/ramp_span_corpus_v0.embeddings.jsonl \
+  --batch-size 4 \
+  --dtype bfloat16 \
+  --layer final
+```
+
+For a quick smoke test on a small GPU, reduce `--batch-size` to `1`.
+
 ## Centroid Build
 
 Centroid v0 should use:
