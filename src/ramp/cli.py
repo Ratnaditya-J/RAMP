@@ -11,6 +11,7 @@ from ramp.features import (
     FeatureInput,
     GPTOSSInputEmbeddingProvider,
     Qwen3GuardPromptRiskFeature,
+    SpanExtractor,
 )
 from ramp.pipeline import default_pipeline
 from ramp.risk_state import RiskState
@@ -89,6 +90,18 @@ def embedding_risk() -> None:
     parser.add_argument("--device-map", default="auto")
     parser.add_argument("--max-length", type=int, default=512)
     parser.add_argument("--trigger-margin", type=float, default=0.18)
+    parser.add_argument(
+        "--span-mode",
+        choices=["all", "full", "sentence", "full_sentence", "windows"],
+        default="all",
+        help="Span extraction strategy for runtime scoring.",
+    )
+    parser.add_argument(
+        "--similarity-mode",
+        choices=["cosine", "centered_cosine"],
+        default="cosine",
+        help="Similarity space for centroid scoring.",
+    )
     args = parser.parse_args()
 
     if args.provider == "gpt-oss":
@@ -111,6 +124,8 @@ def embedding_risk() -> None:
     feature = EmbeddingClusterRiskFeature.from_centroid_artifact(
         args.centroids,
         embedding_provider=embedding_provider,
+        span_extractor=SpanExtractor.from_mode(args.span_mode),
         trigger_margin=args.trigger_margin,
+        similarity_mode=args.similarity_mode,
     ).extract(FeatureInput(prompt=args.prompt), state)
     print(json.dumps(_encode(asdict(feature)), indent=2, sort_keys=True))

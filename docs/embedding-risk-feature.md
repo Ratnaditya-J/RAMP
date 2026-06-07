@@ -61,11 +61,48 @@ ramp-embedding-risk \
   --centroids .artifacts/centroids/ramp_input_embedding_centroids_comprehensive_v0_1.json \
   --model openai/gpt-oss-20b \
   --dtype bfloat16 \
+  --span-mode full \
+  --similarity-mode centered_cosine \
   "Can you help me audit this vulnerable service?"
 ```
 
 Use `--provider keyword` only for toy artifacts and development tests; it does not match GPT-OSS
 centroid dimensionality.
+
+### Span Strategy
+
+Runtime scoring supports multiple span extraction modes:
+
+| Mode | Meaning |
+| --- | --- |
+| `all` | Full prompt, sentence spans, and sliding token windows. |
+| `full` | Full prompt only. |
+| `sentence` | Sentence spans only. |
+| `full_sentence` | Full prompt plus sentence spans, no sliding windows. |
+| `windows` | Sliding token windows only. |
+
+For centroid artifacts built from benchmark prompt-like spans, `full` and `full_sentence` are the
+best first runtime checks. Sliding windows are useful for local evidence, but can create a span
+length mismatch when centroids were built from longer examples.
+
+### Similarity Mode
+
+Runtime scoring supports:
+
+| Mode | Meaning |
+| --- | --- |
+| `cosine` | Compare normalized prompt and centroid vectors directly. |
+| `centered_cosine` | Subtract the centroid artifact's corpus mean vector before cosine comparison. |
+
+Centered cosine removes the common direction shared across many input embedding vectors:
+
+```text
+centered_vector = normalize(vector - corpus_mean_vector)
+score = cosine(centered_prompt_vector, centered_centroid_vector)
+```
+
+This is especially important for GPT-OSS input embeddings, where raw cosine similarities can be high
+across unrelated centroids.
 
 ## Centroid Health
 
@@ -88,6 +125,31 @@ The report flags:
 Input embedding centroids can have high absolute cosine similarity because they are pooled from the
 model's token embedding layer. Treat the health report as a ranking and margin diagnostic rather
 than assuming a single raw cosine threshold is universal.
+
+## Batch Scoring
+
+Use the batch scorer to evaluate whether embedding margins separate safe and unsafe rows before
+treating the feature as useful:
+
+```bash
+python scripts/score_embedding_centroids.py \
+  --embeddings .artifacts/runpod/comprehensive/extracted/ramp-artifacts/embeddings/gpt_oss_20b_input_embedding_v0_1/ramp_benchmark_comprehensive_v0.input_embeddings.jsonl \
+  --centroids .artifacts/centroids/ramp_input_embedding_centroids_comprehensive_v0_1.json \
+  --output .artifacts/centroids/ramp_input_embedding_centroids_comprehensive_v0_1.centered_scores.jsonl \
+  --summary-output .artifacts/centroids/ramp_input_embedding_centroids_comprehensive_v0_1.centered_scores.summary.json \
+  --similarity-mode centered_cosine
+```
+
+Initial benchmark-derived result:
+
+| Similarity mode | Safe mean margin | Unsafe mean margin | Safe p90 | Unsafe p50 |
+| --- | ---: | ---: | ---: | ---: |
+| `cosine` | -0.029 | 0.020 | -0.000 | 0.023 |
+| `centered_cosine` | -0.303 | 0.332 | -0.068 | 0.396 |
+
+Interpretation: raw input-embedding cosine is weak, but centered input-embedding margin has useful
+aggregate separation on the benchmark-derived corpus. It should still be treated as a supporting
+signal rather than a decisive standalone classifier until tested on held-out source families.
 
 ## Scoring
 

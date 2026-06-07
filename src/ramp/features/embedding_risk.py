@@ -195,9 +195,32 @@ class GPTOSSInputEmbeddingProvider(EmbeddingProvider):
 
 
 class SpanExtractor:
-    def __init__(self, *, window_sizes: tuple[int, ...] = (3, 5), max_spans: int = 32) -> None:
+    def __init__(
+        self,
+        *,
+        include_full_prompt: bool = True,
+        include_sentences: bool = True,
+        window_sizes: tuple[int, ...] = (3, 5),
+        max_spans: int = 32,
+    ) -> None:
+        self.include_full_prompt = include_full_prompt
+        self.include_sentences = include_sentences
         self.window_sizes = window_sizes
         self.max_spans = max_spans
+
+    @classmethod
+    def from_mode(cls, mode: str, *, max_spans: int = 32) -> SpanExtractor:
+        if mode == "all":
+            return cls(max_spans=max_spans)
+        if mode == "full":
+            return cls(include_sentences=False, window_sizes=(), max_spans=1)
+        if mode == "sentence":
+            return cls(include_full_prompt=False, window_sizes=(), max_spans=max_spans)
+        if mode == "full_sentence":
+            return cls(window_sizes=(), max_spans=max_spans)
+        if mode == "windows":
+            return cls(include_full_prompt=False, include_sentences=False, max_spans=max_spans)
+        raise ValueError(f"unknown span extraction mode: {mode}")
 
     def extract(self, text: str) -> list[TextSpan]:
         spans: list[TextSpan] = []
@@ -205,11 +228,13 @@ class SpanExtractor:
         if not stripped:
             return spans
 
-        spans.append(TextSpan(text=stripped, span_type="full_prompt"))
-        for sentence in re.split(r"(?<=[.!?])\s+", stripped):
-            sentence = sentence.strip()
-            if sentence and sentence != stripped:
-                spans.append(TextSpan(text=sentence, span_type="sentence"))
+        if self.include_full_prompt:
+            spans.append(TextSpan(text=stripped, span_type="full_prompt"))
+        if self.include_sentences:
+            for sentence in re.split(r"(?<=[.!?])\s+", stripped):
+                sentence = sentence.strip()
+                if sentence and sentence != stripped:
+                    spans.append(TextSpan(text=sentence, span_type="sentence"))
 
         tokens = re.findall(r"[A-Za-z0-9_'-]+", stripped)
         for window_size in self.window_sizes:
@@ -240,10 +265,18 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
         benign_clusters: Sequence[EmbeddingCluster] | None = None,
         span_extractor: SpanExtractor | None = None,
         trigger_margin: float = 0.18,
+        similarity_mode: str = "cosine",
+        corpus_mean_vector: Vector | None = None,
     ) -> None:
+        if similarity_mode not in {"cosine", "centered_cosine"}:
+            raise ValueError("similarity_mode must be 'cosine' or 'centered_cosine'")
         self.embedding_provider = embedding_provider or KeywordVectorEmbeddingProvider()
-        self.harm_clusters = tuple(harm_clusters or demo_harm_clusters())
-        self.benign_clusters = tuple(benign_clusters or demo_benign_clusters())
+        self.similarity_mode = similarity_mode
+        self.corpus_mean_vector = corpus_mean_vector
+        self.harm_clusters = self._prepare_clusters(tuple(harm_clusters or demo_harm_clusters()))
+        self.benign_clusters = self._prepare_clusters(
+            tuple(benign_clusters or demo_benign_clusters())
+        )
         self.harmful_action_clusters = tuple(
             cluster for cluster in self.harm_clusters if cluster.subcluster_role == "harmful"
         )
@@ -256,6 +289,28 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
         self.span_extractor = span_extractor or SpanExtractor()
         self.trigger_margin = trigger_margin
 
+    def _prepare_clusters(
+        self,
+        clusters: Sequence[EmbeddingCluster],
+    ) -> tuple[EmbeddingCluster, ...]:
+        if self.similarity_mode == "cosine":
+            return tuple(clusters)
+        if self.corpus_mean_vector is None:
+            raise ValueError("centered_cosine requires a corpus mean vector")
+        return tuple(
+            EmbeddingCluster(
+                cluster_id=cluster.cluster_id,
+                category=cluster.category,
+                centroid=center_and_normalize(cluster.centroid, self.corpus_mean_vector),
+                kind=cluster.kind,
+                version=cluster.version,
+                description=cluster.description,
+                harm_domain=cluster.harm_domain,
+                subcluster_role=cluster.subcluster_role,
+            )
+            for cluster in clusters
+        )
+
     @classmethod
     def from_centroid_artifact(
         cls,
@@ -264,8 +319,13 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
         embedding_provider: EmbeddingProvider | None = None,
         span_extractor: SpanExtractor | None = None,
         trigger_margin: float = 0.18,
+        similarity_mode: str = "cosine",
     ) -> EmbeddingClusterRiskFeature:
-        clusters = load_centroid_artifact(path)
+        artifact = load_centroid_artifact_json(path)
+        corpus_mean_vector = tuple(float(value) for value in artifact.get("corpus_mean_vector", ()))
+        if similarity_mode == "centered_cosine" and not corpus_mean_vector:
+            raise ValueError("centered_cosine requires artifact['corpus_mean_vector']")
+        clusters = clusters_from_centroid_artifact(artifact)
         harm_clusters = [cluster for cluster in clusters if cluster.kind == "harm"]
         benign_clusters = [cluster for cluster in clusters if cluster.kind == "benign"]
         return cls(
@@ -274,6 +334,8 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
             benign_clusters=benign_clusters,
             span_extractor=span_extractor,
             trigger_margin=trigger_margin,
+            similarity_mode=similarity_mode,
+            corpus_mean_vector=corpus_mean_vector,
         )
 
     def extract(self, feature_input: FeatureInput, state: RiskState) -> FeatureResult:
@@ -345,6 +407,13 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
                 "num_spans_scored": len(scored),
                 "num_triggered_spans": len(triggered),
                 "trigger_margin": self.trigger_margin,
+                "similarity_mode": self.similarity_mode,
+                "span_extractor": {
+                    "include_full_prompt": self.span_extractor.include_full_prompt,
+                    "include_sentences": self.span_extractor.include_sentences,
+                    "window_sizes": list(self.span_extractor.window_sizes),
+                    "max_spans": self.span_extractor.max_spans,
+                },
             },
         )
 
@@ -360,11 +429,14 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
         )
 
     def _score_span(self, span: TextSpan, vector: Vector) -> SpanClusterScore:
-        harm_cluster, harm_similarity = nearest_cluster(vector, self.harmful_action_clusters)
-        benign_cluster, benign_similarity = nearest_cluster(vector, self.benign_clusters)
-        evasion_cluster, evasion_similarity = nearest_cluster_or_none(vector, self.evasion_clusters)
+        score_vector = self._score_vector(vector)
+        harm_cluster, harm_similarity = nearest_cluster(score_vector, self.harmful_action_clusters)
+        benign_cluster, benign_similarity = nearest_cluster(score_vector, self.benign_clusters)
+        evasion_cluster, evasion_similarity = nearest_cluster_or_none(
+            score_vector, self.evasion_clusters
+        )
         optimization_cluster, optimization_similarity = nearest_cluster_or_none(
-            vector,
+            score_vector,
             self.optimization_clusters,
         )
         return SpanClusterScore(
@@ -379,6 +451,14 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
             optimization_similarity=optimization_similarity,
             margin=harm_similarity - benign_similarity,
         )
+
+    def _score_vector(self, vector: Vector) -> Vector:
+        normalized = normalize(vector)
+        if self.similarity_mode == "cosine":
+            return normalized
+        if self.corpus_mean_vector is None:
+            raise ValueError("centered_cosine requires a corpus mean vector")
+        return center_and_normalize(normalized, self.corpus_mean_vector)
 
     def _risk_score(
         self,
@@ -509,8 +589,14 @@ def demo_benign_clusters() -> list[EmbeddingCluster]:
 
 
 def load_centroid_artifact(path: str | Path) -> list[EmbeddingCluster]:
-    artifact_path = Path(path)
-    artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+    return clusters_from_centroid_artifact(load_centroid_artifact_json(path))
+
+
+def load_centroid_artifact_json(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def clusters_from_centroid_artifact(artifact: dict[str, Any]) -> list[EmbeddingCluster]:
     artifact_id = artifact["centroid_artifact_id"]
     clusters: list[EmbeddingCluster] = []
     for centroid in artifact["centroids"]:
@@ -571,6 +657,14 @@ def normalize(vector: Iterable[float]) -> Vector:
     if norm == 0.0:
         return values
     return tuple(value / norm for value in values)
+
+
+def center_and_normalize(vector: Iterable[float], mean_vector: Iterable[float]) -> Vector:
+    values = tuple(float(value) for value in vector)
+    means = tuple(float(value) for value in mean_vector)
+    if len(values) != len(means):
+        raise ValueError("vector and mean vector must have the same dimensionality")
+    return normalize(value - means[idx] for idx, value in enumerate(values))
 
 
 def mean_pool_torch_vectors(vectors: Any, attention_mask: Any) -> Any:
