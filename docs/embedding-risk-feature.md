@@ -6,6 +6,11 @@ This stage is not meant to replace the prompt classifier. It measures whether a 
 
 The feature must not model each harm category as one centroid. Broad domains such as cyber, chemical, weapons, or fraud are too coarse. Each domain should be represented as structured subclusters: harmful actions, benign near-neighbors, ambiguous policy-boundary cases, evasion or concealment, and optimization or escalation.
 
+Benign near-neighbor centroids are intentionally contrastive. They are not meant to cover all
+benign language or balance the number of harmful centroids. Their purpose is to anchor safe
+requests that are semantically close to harmful neighborhoods, so the margin score can reduce
+false positives in borderline cases.
+
 ## Current Implementation
 
 The scaffold includes `EmbeddingClusterRiskFeature` with three pieces:
@@ -28,6 +33,9 @@ feature = EmbeddingClusterRiskFeature.from_centroid_artifact(
 ```
 
 The embedding provider must emit vectors with the same dimensionality and source contract as the centroid artifact.
+
+The current benchmark-derived extraction and centroid artifact are recorded in
+[RAMP Artifact Registry](./artifact-registry.md).
 
 ## Scoring
 
