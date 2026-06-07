@@ -1,0 +1,64 @@
+{
+  "embedding_source_id": "gpt_oss_20b_input_embedding_v0.1",
+  "status": "frozen_for_embedding_centroid_v0",
+  "model": {
+    "provider": "OpenAI",
+    "huggingface_model_id": "openai/gpt-oss-20b",
+    "model_family": "gpt-oss",
+    "license": "Apache-2.0 subject to gpt-oss usage policy",
+    "role_in_ramp": "open-weight target model input embedding space for span clustering"
+  },
+  "runtime": {
+    "primary_environment": "RunPod GPU pod",
+    "serving_runtime_for_generation": "vLLM optional",
+    "extraction_runtime_for_embeddings": "PyTorch + Transformers",
+    "why_not_hosted_api": "RAMP needs GPT-OSS input embedding-layer vectors; hosted chat APIs do not expose model.get_input_embeddings()(input_ids)."
+  },
+  "extraction": {
+    "representation": "input_embedding",
+    "input_unit": "span_text",
+    "tokenization": "model tokenizer with chat/template disabled for isolated spans unless the experiment explicitly tests chat context",
+    "embedding_layer_policy": "use model.get_input_embeddings()(input_ids)",
+    "pooling": "attention-mask mean pooling over non-padding tokens",
+    "normalization": "l2_normalize pooled vector before centroid construction",
+    "batching": "batch spans by token length and record batch size in metadata",
+    "precision": "bfloat16 preferred on supported GPUs; record actual dtype",
+    "max_sequence_length": 512,
+    "randomness": "disable sampling; set deterministic seeds where framework support allows"
+  },
+  "centroid_build": {
+    "corpus": "benchmark-derived span corpus plus reviewed hard benign near-neighbors",
+    "taxonomy": "data/taxonomy/ramp_taxonomy_v0_1.json",
+    "centroid_method_v0": "mean of normalized span vectors per domain/subcluster_role/subcluster_id, followed by l2 normalization",
+    "minimum_examples_per_centroid_target": 25,
+    "minimum_examples_per_centroid_floor_for_demo": 3,
+    "heldout_policy": "hold out benchmark source splits or source families before threshold calibration"
+  },
+  "runpod": {
+    "recommended_first_gpu": "single H200, H100 80GB, or A100 80GB GPU",
+    "persistent_volume_gb": 150,
+    "recommended_template": "RunPod PyTorch/Jupyter pod or custom CUDA image with Transformers",
+    "required_env": [
+      "HF_TOKEN",
+      "RAMP_EMBEDDING_SOURCE_CONFIG=/workspace/RAMP/data/embedding_source/gpt_oss_20b_input_embedding_v0_1.json",
+      "RAMP_EMBEDDING_OUTPUT_DIR=/workspace/ramp-artifacts/embeddings/gpt_oss_20b_input_embedding_v0_1"
+    ]
+  },
+  "provenance_required_in_outputs": [
+    "embedding_source_id",
+    "representation",
+    "huggingface_model_id",
+    "model_revision",
+    "tokenizer_revision",
+    "transformers_version",
+    "torch_version",
+    "cuda_version",
+    "gpu_name",
+    "dtype",
+    "pooling",
+    "normalization",
+    "source_corpus_version",
+    "taxonomy_id",
+    "created_at"
+  ]
+}
