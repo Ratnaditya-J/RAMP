@@ -22,3 +22,8 @@ RAMP is organized around partial evidence. Each feature extractor emits a `Featu
 
 The scaffold intentionally keeps feature extraction, fusion, scheduling, provenance, and session state separate. This lets a deployment swap in one production-grade component without rewriting the rest.
 
+## Session Boundaries
+
+Session features should distinguish explicit session IDs from inferred context windows. If a caller provides a conversation, task, or agent-run ID, RAMP can compute session-risk features over that known boundary. If no session ID exists, RAMP should use a bounded sliding window only when the caller can provide trustworthy local context, and should lower confidence accordingly.
+
+Missing or uncertain session context should be represented explicitly rather than treated as low risk.
