@@ -179,6 +179,50 @@ same-domain benign near-neighbor exists. The embedding feature should still be t
 supporting signal rather than a decisive standalone classifier until tested on held-out source
 families.
 
+## Calibration Report
+
+After batch scoring, generate a calibration report across one or more scored JSONL files:
+
+```bash
+python scripts/report_embedding_feature_calibration.py \
+  --scores .artifacts/centroids/ramp_input_embedding_centroids_comprehensive_v0_1.cosine_scores.jsonl \
+  --scores .artifacts/centroids/ramp_input_embedding_centroids_comprehensive_v0_1.centered_any_domain_scores.jsonl \
+  --scores .artifacts/centroids/ramp_input_embedding_centroids_comprehensive_v0_1.centered_domain_conditioned_scores.jsonl \
+  --names raw_cosine,centered_any_domain,centered_domain_conditioned \
+  --output-json .artifacts/centroids/ramp_input_embedding_feature_calibration_v0_1.json \
+  --output-md .artifacts/centroids/ramp_input_embedding_feature_calibration_v0_1.md
+```
+
+The report includes:
+
+- label-level margin distributions
+- AUC for safe vs unsafe margin ranking
+- zero-margin, best-F1, and target-FPR threshold candidates
+- domain-level calibration slices
+- source-level slices
+- hard benign near-neighbor collisions
+- unsafe rows with non-positive margins
+- a recommended feature role
+
+For the current GPT-OSS input-embedding artifact, the expected role is
+`supporting_semantic_prior`: useful for semantic routing and low-to-medium score weight, but not
+safe as a standalone block signal. The RunPod live smoke test showed the same pattern: domain
+conditioning selects the right benign anchor, but a benign cyber audit request can still sit closer
+to the harmful vulnerability centroid than to the defensive-security centroid.
+
+For an embedding-only baseline, train a small linear classifier over the extracted input embeddings:
+
+```bash
+python scripts/train_embedding_linear_baseline.py \
+  --embeddings .artifacts/runpod/comprehensive/extracted/ramp-artifacts/embeddings/gpt_oss_20b_input_embedding_v0_1/ramp_benchmark_comprehensive_v0.input_embeddings.jsonl \
+  --output .artifacts/centroids/ramp_input_embedding_linear_baseline_v0_1.json
+```
+
+This baseline is a research comparison point only. If the linear baseline materially outperforms
+centroid margins, that indicates the input embedding layer contains label information that simple
+centroid contrast is not extracting. It still does not make input embeddings a final decision stage
+without held-out source-family validation.
+
 ## Scoring
 
 Each extracted span is embedded and compared against harmful-action subclusters, benign near-neighbor subclusters, evasion subclusters, and optimization subclusters.
