@@ -37,6 +37,58 @@ The embedding provider must emit vectors with the same dimensionality and source
 The current benchmark-derived extraction and centroid artifact are recorded in
 [RAMP Artifact Registry](./artifact-registry.md).
 
+## GPT-OSS Runtime Path
+
+The live runtime path uses `GPTOSSInputEmbeddingProvider`:
+
+```python
+from ramp.features import EmbeddingClusterRiskFeature, GPTOSSInputEmbeddingProvider
+
+feature = EmbeddingClusterRiskFeature.from_centroid_artifact(
+    ".artifacts/centroids/ramp_input_embedding_centroids_comprehensive_v0_1.json",
+    embedding_provider=GPTOSSInputEmbeddingProvider(model_id="openai/gpt-oss-20b"),
+)
+```
+
+The provider uses the same representation as the centroid build: GPT-OSS input embedding-layer
+vectors, attention-mask mean pooling, and L2 normalization. It loads the model lazily and should be
+used on a GPU machine for realistic latency.
+
+For local or RunPod scoring:
+
+```bash
+ramp-embedding-risk \
+  --centroids .artifacts/centroids/ramp_input_embedding_centroids_comprehensive_v0_1.json \
+  --model openai/gpt-oss-20b \
+  --dtype bfloat16 \
+  "Can you help me audit this vulnerable service?"
+```
+
+Use `--provider keyword` only for toy artifacts and development tests; it does not match GPT-OSS
+centroid dimensionality.
+
+## Centroid Health
+
+Before using a centroid artifact for threshold calibration, generate a health report:
+
+```bash
+python scripts/report_centroid_health.py \
+  --centroids .artifacts/centroids/ramp_input_embedding_centroids_comprehensive_v0_1.json \
+  --output .artifacts/centroids/ramp_input_embedding_centroids_comprehensive_v0_1.health.json
+```
+
+The report flags:
+
+- low-count centroids
+- source concentration
+- missing same-domain benign anchors
+- nearest harmful/evasion to benign contrast anchors
+- harmful/benign collisions under the configured cosine threshold
+
+Input embedding centroids can have high absolute cosine similarity because they are pooled from the
+model's token embedding layer. Treat the health report as a ranking and margin diagnostic rather
+than assuming a single raw cosine threshold is universal.
+
 ## Scoring
 
 Each extracted span is embedded and compared against harmful-action subclusters, benign near-neighbor subclusters, evasion subclusters, and optimization subclusters.

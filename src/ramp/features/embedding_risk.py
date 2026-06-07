@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import re
+import time
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from ramp.features.base import FeatureExtractor, FeatureInput
 from ramp.risk_state import RiskState
@@ -96,6 +99,101 @@ class KeywordVectorEmbeddingProvider(EmbeddingProvider):
         return normalize(tuple(score))
 
 
+class GPTOSSInputEmbeddingProvider(EmbeddingProvider):
+    """Live GPT-OSS input-embedding provider for runtime centroid scoring.
+
+    This provider extracts the same representation used by the source-of-record centroid build:
+    token IDs passed through `model.get_input_embeddings()(input_ids)`, attention-mask mean pooled,
+    then L2-normalized. It loads lazily because `openai/gpt-oss-20b` is a large model.
+    """
+
+    def __init__(
+        self,
+        model_id: str = "openai/gpt-oss-20b",
+        *,
+        max_length: int = 512,
+        dtype: str = "auto",
+        device_map: str = "auto",
+        version: str | None = None,
+    ) -> None:
+        self.model_id = model_id
+        self.max_length = max_length
+        self.dtype = dtype
+        self.device_map = device_map
+        self.version = version or f"gpt_oss_input_embedding:{model_id}"
+        self._tokenizer: Any | None = None
+        self._model: Any | None = None
+
+    @classmethod
+    def from_env(cls) -> GPTOSSInputEmbeddingProvider:
+        return cls(
+            model_id=os.getenv("RAMP_GPT_OSS_MODEL", "openai/gpt-oss-20b"),
+            max_length=int(os.getenv("RAMP_GPT_OSS_MAX_LENGTH", "512")),
+            dtype=os.getenv("RAMP_GPT_OSS_DTYPE", "auto"),
+            device_map=os.getenv("RAMP_GPT_OSS_DEVICE_MAP", "auto"),
+        )
+
+    def embed(self, texts: Sequence[str]) -> list[Vector]:
+        if not texts:
+            return []
+        self._ensure_model_loaded()
+        tokenizer = self._tokenizer
+        model = self._model
+        if tokenizer is None or model is None:
+            raise RuntimeError("GPT-OSS model failed to load")
+
+        import torch
+
+        encoded = tokenizer(
+            list(texts),
+            padding=True,
+            truncation=True,
+            max_length=self.max_length,
+            return_tensors="pt",
+        )
+        input_embeddings = model.get_input_embeddings()
+        embedding_device = input_embeddings.weight.device
+        input_ids = encoded["input_ids"].to(embedding_device)
+        attention_mask = encoded["attention_mask"].to(embedding_device)
+        with torch.inference_mode():
+            token_vectors = input_embeddings(input_ids)
+            vectors = mean_pool_torch_vectors(token_vectors, attention_mask)
+        return [tuple(float(value) for value in vector) for vector in vectors.cpu().tolist()]
+
+    def _ensure_model_loaded(self) -> None:
+        if self._model is not None and self._tokenizer is not None:
+            return
+
+        try:
+            from transformers import AutoModelForCausalLM, AutoTokenizer
+        except ImportError as exc:
+            raise RuntimeError(
+                "GPTOSSInputEmbeddingProvider requires Transformers and PyTorch. "
+                "Install the optional model dependencies before using live GPT-OSS scoring."
+            ) from exc
+
+        self._tokenizer = AutoTokenizer.from_pretrained(self.model_id)
+        if self._tokenizer.pad_token_id is None:
+            self._tokenizer.pad_token = self._tokenizer.eos_token
+        self._model = AutoModelForCausalLM.from_pretrained(
+            self.model_id,
+            device_map=self.device_map,
+            torch_dtype=self._torch_dtype(),
+        )
+        self._model.eval()
+
+    def _torch_dtype(self) -> Any:
+        if self.dtype == "auto":
+            return "auto"
+        import torch
+
+        return {
+            "float16": torch.float16,
+            "bfloat16": torch.bfloat16,
+            "float32": torch.float32,
+        }[self.dtype]
+
+
 class SpanExtractor:
     def __init__(self, *, window_sizes: tuple[int, ...] = (3, 5), max_spans: int = 32) -> None:
         self.window_sizes = window_sizes
@@ -179,6 +277,7 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
         )
 
     def extract(self, feature_input: FeatureInput, state: RiskState) -> FeatureResult:
+        start = time.perf_counter()
         spans = self.span_extractor.extract(feature_input.prompt)
         if not spans:
             return self._empty_result()
@@ -203,6 +302,7 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
         )
         confidence = min(0.90, 0.55 + abs(top.risk_margin) * 0.35 + min(len(scored), 10) * 0.01)
         top_risk_cluster = top.top_risk_cluster()
+        latency_ms = round((time.perf_counter() - start) * 1000)
 
         return FeatureResult(
             stage=self.stage,
@@ -210,6 +310,7 @@ class EmbeddingClusterRiskFeature(FeatureExtractor):
             confidence=confidence,
             label="semantic_proximity",
             harm_category=top_risk_cluster.category if risk_score >= 0.35 else None,
+            latency_ms=latency_ms,
             cost_tier=1,
             version=f"embedding_cluster_risk:{self.embedding_provider.version}",
             metadata={
@@ -470,6 +571,16 @@ def normalize(vector: Iterable[float]) -> Vector:
     if norm == 0.0:
         return values
     return tuple(value / norm for value in values)
+
+
+def mean_pool_torch_vectors(vectors: Any, attention_mask: Any) -> Any:
+    import torch
+
+    mask = attention_mask.unsqueeze(-1).to(vectors.dtype)
+    summed = (vectors * mask).sum(dim=1)
+    counts = mask.sum(dim=1).clamp(min=1)
+    pooled = summed / counts
+    return torch.nn.functional.normalize(pooled.float(), p=2, dim=1)
 
 
 def dedupe_spans(spans: Sequence[TextSpan]) -> list[TextSpan]:

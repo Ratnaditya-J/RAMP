@@ -28,6 +28,7 @@ dev = [
 [project.scripts]
 ramp-single-turn-demo = "ramp.cli:single_turn_demo"
 ramp-prompt-risk = "ramp.cli:prompt_risk"
+ramp-embedding-risk = "ramp.cli:embedding_risk"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/ramp"]
