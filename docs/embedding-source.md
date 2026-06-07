@@ -135,6 +135,17 @@ postprocess = L2-normalize centroid vector
 
 Target at least 25 reviewed examples per centroid before treating it as research-grade. A lower floor can be used for demos, but must be marked as such.
 
+Build centroids from an embedding JSONL artifact:
+
+```bash
+python scripts/build_embedding_centroids.py \
+  --embeddings .artifacts/runpod/extracted/embeddings/gpt_oss_20b_hidden_state_v0_1/ramp_benchmark_full_v0.embeddings.jsonl \
+  --embedding-source data/embedding_source/gpt_oss_20b_hidden_state_v0_1.json \
+  --taxonomy data/taxonomy/ramp_taxonomy_v0_1.json \
+  --output .artifacts/centroids/ramp_embedding_centroids_v0_1.json \
+  --min-count-warning 25
+```
+
 ## Open Questions
 
 - Which exact hidden layers should be compared against the final-layer default?
