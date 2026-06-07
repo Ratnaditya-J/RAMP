@@ -79,6 +79,7 @@ def main() -> None:
     sources: dict[tuple[str, str, str], dict[str, int]] = defaultdict(lambda: defaultdict(int))
     first_provenance: dict[str, Any] | None = None
     dimension: int | None = None
+    corpus_sum: Vector | None = None
     total_rows = 0
 
     with embeddings_path.open(encoding="utf-8") as input_file:
@@ -89,6 +90,7 @@ def main() -> None:
             total_rows += 1
             vector = l2_normalize(record["embedding"])
             dimension = dimension or len(vector)
+            corpus_sum = add_in_place(corpus_sum, vector)
             key = centroid_key(record)
             sums[key] = add_in_place(sums.get(key), vector)
             counts[key] += 1
@@ -99,6 +101,9 @@ def main() -> None:
 
     centroids: list[dict[str, Any]] = []
     warnings: list[dict[str, Any]] = []
+    corpus_mean_vector = []
+    if corpus_sum is not None and total_rows:
+        corpus_mean_vector = [value / total_rows for value in corpus_sum]
     for key in sorted(sums):
         domain, subcluster_role, subcluster_id = key
         count = counts[key]
@@ -137,6 +142,8 @@ def main() -> None:
         "num_centroids": len(centroids),
         "dimension": dimension,
         "centroid_method": "mean_of_l2_normalized_vectors_then_l2_normalize",
+        "corpus_mean_method": "mean_of_l2_normalized_span_vectors",
+        "corpus_mean_vector": corpus_mean_vector,
         "min_count_warning": args.min_count_warning,
         "warnings": warnings,
         "source_provenance_sample": first_provenance or {},

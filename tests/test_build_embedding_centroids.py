@@ -66,6 +66,8 @@ def test_build_embedding_centroids_script(tmp_path: Path) -> None:
     assert artifact["num_centroids"] == 2
     assert artifact["dimension"] == 2
     assert artifact["centroid_method"] == "mean_of_l2_normalized_vectors_then_l2_normalize"
+    assert artifact["corpus_mean_method"] == "mean_of_l2_normalized_span_vectors"
+    assert artifact["corpus_mean_vector"] == [2 / 3, 1 / 3]
     assert len(artifact["warnings"]) == 1
 
     harmful = next(

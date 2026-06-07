@@ -49,6 +49,17 @@ class EmbeddingRiskTest(unittest.TestCase):
         self.assertIn("First sentence.", [span.text for span in spans])
         self.assertIn("Please avoid detection", [span.text for span in spans])
 
+    def test_span_extractor_modes(self) -> None:
+        full_only = SpanExtractor.from_mode("full").extract("First sentence. Second sentence.")
+        sentence_only = SpanExtractor.from_mode("sentence").extract(
+            "First sentence. Second sentence."
+        )
+
+        self.assertEqual([(span.span_type, span.text) for span in full_only], [
+            ("full_prompt", "First sentence. Second sentence.")
+        ])
+        self.assertEqual([span.span_type for span in sentence_only], ["sentence", "sentence"])
+
     def test_benign_contrast_keeps_safety_prompt_low(self) -> None:
         feature = EmbeddingClusterRiskFeature()
         result = feature.extract(
@@ -150,6 +161,43 @@ class EmbeddingRiskTest(unittest.TestCase):
             result.metadata["embedding_provider_version"],
             "static_embedding_provider_v0",
         )
+
+    def test_centered_cosine_uses_artifact_mean_vector(self) -> None:
+        artifact = {
+            "centroid_artifact_id": "centered_test_centroids",
+            "corpus_mean_vector": [0.5, 0.0],
+            "centroids": [
+                {
+                    "domain": "cyber_abuse",
+                    "subcluster_role": "harmful",
+                    "subcluster_id": "vulnerability_exploitation",
+                    "count": 10,
+                    "centroid": [1.0, 0.0],
+                },
+                {
+                    "domain": "cyber_abuse",
+                    "subcluster_role": "benign_near_neighbor",
+                    "subcluster_id": "defensive_security",
+                    "count": 10,
+                    "centroid": [0.0, 1.0],
+                },
+            ],
+        }
+        artifact_path = Path(".pytest_cache/centered_test_centroids.json")
+        artifact_path.parent.mkdir(exist_ok=True)
+        artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+        feature = EmbeddingClusterRiskFeature.from_centroid_artifact(
+            artifact_path,
+            embedding_provider=StaticEmbeddingProvider((1.0, 0.0)),
+            span_extractor=SpanExtractor.from_mode("full"),
+            similarity_mode="centered_cosine",
+        )
+
+        result = feature.extract(FeatureInput(prompt="probe this host"), make_state())
+
+        self.assertEqual(result.metadata["similarity_mode"], "centered_cosine")
+        self.assertEqual(result.metadata["top_harmful_subcluster"], "vulnerability_exploitation")
+        self.assertGreater(result.metadata["harm_minus_benign_margin"], 0.0)
 
 
 if __name__ == "__main__":
