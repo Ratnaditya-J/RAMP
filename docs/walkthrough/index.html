@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RAMP Visual Walkthrough</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #171717;
+        --muted: #62666f;
+        --line: #d9dee7;
+        --paper: #ffffff;
+        --soft: #f7f8fb;
+        --accent: #0f766e;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background: var(--paper);
+        line-height: 1.55;
+      }
+
+      header,
+      main,
+      footer {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      header {
+        padding: 48px 0 24px;
+      }
+
+      .back {
+        display: inline-block;
+        margin-bottom: 28px;
+        color: var(--accent);
+        font-weight: 650;
+        text-decoration: none;
+      }
+
+      h1 {
+        max-width: 820px;
+        margin: 0 0 14px;
+        font-size: clamp(2rem, 5vw, 3.8rem);
+        line-height: 1;
+        letter-spacing: 0;
+      }
+
+      .lede {
+        max-width: 820px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 1.1rem;
+      }
+
+      .toc {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 10px;
+        margin: 28px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .toc a {
+        display: block;
+        min-height: 44px;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: var(--ink);
+        text-decoration: none;
+        font-weight: 650;
+        background: var(--soft);
+      }
+
+      main {
+        padding-bottom: 64px;
+      }
+
+      figure {
+        margin: 0;
+        padding: 40px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      figure:first-child {
+        border-top: 0;
+      }
+
+      figcaption {
+        margin-bottom: 18px;
+      }
+
+      figcaption h2 {
+        margin: 0 0 6px;
+        font-size: 1.35rem;
+      }
+
+      figcaption p {
+        max-width: 820px;
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .section-heading {
+        border-top: 1px solid var(--line);
+        padding: 48px 0 8px;
+      }
+
+      .section-heading h2 {
+        margin: 0 0 8px;
+        font-size: 1.65rem;
+      }
+
+      .section-heading p {
+        max-width: 820px;
+        margin: 0;
+        color: var(--muted);
+      }
+
+      img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: white;
+      }
+
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 24px 0 48px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a class="back" href="../">RAMP Docs</a>
+      <h1>RAMP: Multi-Signal Safety Classification</h1>
+      <p class="lede">
+        RAMP is an open-source reference implementation for testing whether accumulated
+        multi-signal evidence improves safety classification beyond standalone guard models.
+      </p>
+      <ol class="toc" aria-label="Figure order">
+        <li><a href="#overview">1. Overview</a></li>
+        <li><a href="#prompt">2. Prompt Classifier</a></li>
+        <li><a href="#embedding">3. Embedding Risk</a></li>
+        <li><a href="#activation">4. Activation Probe</a></li>
+        <li><a href="#output">5. Output Classifier</a></li>
+        <li><a href="#session">6. Session Risk</a></li>
+        <li><a href="#audit">7. Async Audit Context</a></li>
+        <li><a href="#label-audit">8. Label Audit</a></li>
+        <li><a href="#fusion-calibration">9. Fusion Calibration</a></li>
+        <li><a href="#severity-floor">10. Severity Floor</a></li>
+      </ol>
+    </header>
+
+    <main>
+      <figure id="overview">
+        <figcaption>
+          <h2>1. Many Signals, One Risk Estimate</h2>
+          <p>
+            RAMP treats safety classification as accumulated evidence rather than a single
+            one-shot prompt verdict.
+          </p>
+        </figcaption>
+        <img src="../figures/All-Features.png" alt="Overview diagram showing multiple RAMP feature signals combining into one risk score." />
+      </figure>
+
+      <figure id="prompt">
+        <figcaption>
+          <h2>2. Prompt Risk Feature</h2>
+          <p>
+            The first explicit stage scores the raw user prompt with an interchangeable safety
+            classifier backend.
+          </p>
+        </figcaption>
+        <img src="../figures/Input-Classifier.png" alt="Prompt risk classifier diagram showing user input producing an initial safety signal." />
+      </figure>
+
+      <figure id="embedding">
+        <figcaption>
+          <h2>3. Embedding Risk Feature</h2>
+          <p>
+            Prompt spans can be compared against harmful and benign semantic neighborhoods to
+            expose risk not captured by labels alone.
+          </p>
+        </figcaption>
+        <img src="../figures/Embeddings.png" alt="Embedding risk diagram showing prompt spans compared with semantic neighborhoods." />
+      </figure>
+
+      <figure id="activation">
+        <figcaption>
+          <h2>4. Activation Probe Feature</h2>
+          <p>
+            Internal model signals can serve as another classifier feature when activations are
+            available for analysis.
+          </p>
+        </figcaption>
+        <img src="../figures/Activation-Probe.png" alt="Activation probe diagram showing model layers inspected for safety-relevant signals." />
+      </figure>
+
+      <figure id="output">
+        <figcaption>
+          <h2>5. Output Risk Feature</h2>
+          <p>
+            Generated text can be scored as a later evidence stage, adding actionability,
+            refusal, and unsafe-detail signals.
+          </p>
+        </figcaption>
+        <img src="../figures/Output-Classifier.png" alt="Output classifier diagram showing generated model output being evaluated for safety risk." />
+      </figure>
+
+      <figure id="session">
+        <figcaption>
+          <h2>6. Session Risk Feature</h2>
+          <p>
+            Session-level attributes capture accumulating severity, harm drift, and multiple
+            prompts that combine into a stronger risk signal.
+          </p>
+        </figcaption>
+        <img src="../figures/Session-Risk-Ledger.png" alt="Session risk ledger diagram showing prompt sequence, session attributes, and a rising session risk feature score." />
+      </figure>
+
+      <figure id="audit">
+        <figcaption>
+          <h2>7. Asynchronous Audit Context</h2>
+          <p>
+            Deployment timing changes when evidence becomes available, but the classifier core
+            still consumes the same staged signals.
+          </p>
+        </figcaption>
+        <img src="../figures/Streaming-UseCase.png" alt="Diagram showing asynchronous output audit context around the same RAMP evidence stages." />
+      </figure>
+
+      <section class="section-heading" aria-labelledby="implementation-detail">
+        <h2 id="implementation-detail">Implementation Detail</h2>
+        <p>
+          These figures explain the research mechanics behind the current RAMP v0 work:
+          label auditing, calibrated fusion, and severity floors that prevent dangerous
+          prompts from being averaged into an allow decision.
+        </p>
+      </section>
+
+      <figure id="label-audit">
+        <figcaption>
+          <h2>8. Noisy Labels To Reviewed Truth</h2>
+          <p>
+            Benchmark labels and classifier labels can disagree, so RAMP builds a reviewed
+            prompt-level subset before evaluating prompt classifier quality.
+          </p>
+        </figcaption>
+        <img src="../figures/Implementation-Label-Audit.png" alt="Hand-drawn illustration showing corpus labels and Qwen labels being routed through human review into reviewed truth." />
+      </figure>
+
+      <figure id="fusion-calibration">
+        <figcaption>
+          <h2>9. Calibration, Not Hand-Tuned Weights</h2>
+          <p>
+            Fusion weights are selected on reviewed data under explicit objectives, rather
+            than chosen as arbitrary prompt, embedding, and activation weights.
+          </p>
+        </figcaption>
+        <img src="../figures/Implementation-Fusion-Calibration.png" alt="Hand-drawn illustration showing prompt, embedding, and activation knobs searched against reviewed labels and target false-positive rate." />
+      </figure>
+
+      <figure id="severity-floor">
+        <figcaption>
+          <h2>10. Severity Floor Guardrail</h2>
+          <p>
+            High-severity prompt evidence can set a minimum risk floor so weak embedding or
+            activation signals cannot wash it below the allow threshold.
+          </p>
+        </figcaption>
+        <img src="../figures/Implementation-Severity-Floor.png" alt="Hand-drawn illustration showing a high-severity prompt on a risk scale held above the allow threshold by a severity floor." />
+      </figure>
+    </main>
+
+    <footer>
+      RAMP is a reference implementation and evaluation harness for multi-signal safety
+      classification.
+    </footer>
+  </body>
+</html>
