@@ -1,6 +1,8 @@
 # Figures
 
-This directory is reserved for architecture diagrams and generated illustrations.
+This directory is reserved for architecture diagrams and generated illustrations. The
+published visual walkthrough lives at `../walkthrough/`; this folder keeps the image
+assets and a redirect from the previous `/figures/` page URL.
 
 Suggested first figures:
 
