@@ -1,4 +1,10 @@
-from ramp.features.activation_probe import StubActivationProbeFeature
+from ramp.features.activation_probe import (
+    ActivationProbeFeature,
+    ActivationProvider,
+    ContextActivationProvider,
+    LinearActivationProbe,
+    StubActivationProbeFeature,
+)
 from ramp.features.base import FeatureExtractor, FeatureInput
 from ramp.features.embedding_risk import (
     EmbeddingCluster,
@@ -28,6 +34,9 @@ from ramp.features.tool_action_risk import SideEffectToolActionRiskFeature
 __all__ = [
     "FeatureExtractor",
     "FeatureInput",
+    "ActivationProbeFeature",
+    "ActivationProvider",
+    "ContextActivationProvider",
     "EmbeddingCluster",
     "EmbeddingClusterRiskFeature",
     "EmbeddingProvider",
@@ -36,6 +45,7 @@ __all__ = [
     "KeywordPromptRiskFeature",
     "KeywordVectorEmbeddingProvider",
     "LexicalEmbeddingRiskFeature",
+    "LinearActivationProbe",
     "SpanExtractor",
     "TextSpan",
     "DEFAULT_QWEN3GUARD_MODEL",

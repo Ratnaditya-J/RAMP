@@ -64,7 +64,7 @@ class RampScaffoldTest(unittest.TestCase):
         )
 
         self.assertIn(
-            "prompt classifier low risk but embedding risk elevated",
+            "prompt classifier low risk but embedding prior elevated",
             decision.disagreements,
         )
         self.assertIn(

@@ -17,7 +17,9 @@ This repository starts with a small executable core:
 - a first embedding-cluster feature scaffold with documented harm and benign contrast sub-clusters
 - a frozen gpt-oss input-embedding source decision for centroid research
 - gpt-oss hidden-state activation extraction for probe research
+- linear activation probe training and layer comparison
 - a research artifact registry for benchmark corpora, embeddings, activations, and centroids
+- cumulative internal-signal evaluation for embedding priors plus activation evidence
 - an agent tool/action gate
 - examples for single-turn evaluation, private-output review, asynchronous audit, and tool-use flows
 - tests for early allow, early block, disagreement tracking, and tool gating
@@ -70,6 +72,8 @@ data/              Placeholder datasets and cluster assets
 Generated research artifacts are not committed. See
 [`docs/artifact-registry.md`](docs/artifact-registry.md) for the current source-of-record
 benchmark corpus, GPT-OSS input embeddings, activation extracts, and centroid build.
+See [`docs/activation-probe-feature.md`](docs/activation-probe-feature.md) for the current
+activation probe result and selected layer.
 
 ## Design Principle
 

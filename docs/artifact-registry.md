@@ -46,6 +46,68 @@ L2 normalization.
 
 Hidden-state files are activation artifacts, not the primary embedding-centroid source.
 
+## Activation Probe Comparison v0.1
+
+| Field | Value |
+| --- | --- |
+| Comparison report | `.artifacts/activation_probes/ramp_activation_probe_layer_comparison_v0_1.json` |
+| Selected probe | `.artifacts/activation_probes/ramp_activation_probe_layer_19_v0_1.json` |
+| Probe family | `linear_activation_probe_v0.1` |
+| Training data | GPT-OSS hidden-state activation files from comprehensive extraction v0 |
+| Selection rule | Highest recall at or below 5% false-positive rate, then AUC |
+| Selected layer | `19` |
+
+Layer comparison:
+
+| Layer | AUC | Recall at <=5% FPR | FPR | Selected threshold |
+| --- | ---: | ---: | ---: | ---: |
+| `12` | 0.9926 | 0.9766 | 0.0500 | 0.22 |
+| `19` | 0.9953 | 0.9869 | 0.0466 | 0.18 |
+| `final` | 0.9940 | 0.9750 | 0.0494 | 0.09 |
+
+The input-embedding linear baseline reached 0.4265 recall at its conservative low-FPR operating
+point. This makes the activation-probe result the stronger current evidence for internal model
+signals.
+
+Holdout validation reports:
+
+```text
+.artifacts/activation_probes/ramp_activation_probe_layer_12_source_holdouts_v0_1.json
+.artifacts/activation_probes/ramp_activation_probe_layer_12_domain_holdouts_v0_1.json
+.artifacts/activation_probes/ramp_activation_probe_layer_19_source_holdouts_v0_1.json
+.artifacts/activation_probes/ramp_activation_probe_layer_19_domain_holdouts_v0_1.json
+.artifacts/activation_probes/ramp_activation_probe_layer_final_source_holdouts_v0_1.json
+.artifacts/activation_probes/ramp_activation_probe_layer_final_domain_holdouts_v0_1.json
+```
+
+Layer 19 remains the best current layer under domain-held-out validation, with mean recall 0.9758
+at the train-selected threshold and mean AUC 0.9851 on domains that contain both safe and unsafe
+labels. Source-held-out validation exposes dataset-family shift: `do_not_answer` has high safe
+false-positive rate and `wildguardmix` unsafe recall drops. Treat this as a strong research signal,
+not yet a standalone decision feature.
+
+## Cumulative Internal-Signal Evaluation v0.1
+
+| Field | Value |
+| --- | --- |
+| Evaluation report | `.artifacts/internal_signal_eval/ramp_internal_signal_ablation_v0_1.json` |
+| Markdown summary | `.artifacts/internal_signal_eval/ramp_internal_signal_ablation_v0_1.md` |
+| Feature table | `.artifacts/internal_signal_eval/ramp_internal_signal_feature_table_v0_1.jsonl` |
+| Embedding input | Centered, domain-conditioned input-embedding centroid scores |
+| Activation input | Layer 19 activation probe probabilities |
+| Fusion rule | Fixed weighted sum: 0.25 embedding prior, 0.75 activation evidence |
+
+This report evaluates cumulative value, not signal replacement. Embedding proximity is treated as
+the early semantic prior and activation probability as later internal-state evidence.
+
+Current ablation result:
+
+| Ablation | AUC | Recall at <=5% FPR | FPR |
+| --- | ---: | ---: | ---: |
+| embedding only | 0.9465 | 0.7870 | 0.0467 |
+| activation only | 0.9959 | 0.9876 | 0.0494 |
+| cumulative fixed fusion | 0.9953 | 0.9859 | 0.0465 |
+
 ## Corpus Mix
 
 The comprehensive corpus was built from benchmark-derived spans:

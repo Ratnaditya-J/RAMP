@@ -205,10 +205,12 @@ The report includes:
 - a recommended feature role
 
 For the current GPT-OSS input-embedding artifact, the expected role is
-`supporting_semantic_prior`: useful for semantic routing and low-to-medium score weight, but not
-safe as a standalone block signal. The RunPod live smoke test showed the same pattern: domain
-conditioning selects the right benign anchor, but a benign cyber audit request can still sit closer
-to the harmful vulnerability centroid than to the defensive-security centroid.
+`supporting_semantic_prior`: useful for semantic routing, harm-domain context, and low-to-medium
+score weight inside the accumulated RAMP state. It is not meant to block by itself. The RunPod live
+smoke test showed the same pattern: domain conditioning selects the right benign anchor, but a
+benign cyber audit request can still sit closer to the harmful vulnerability centroid than to the
+defensive-security centroid. That does not make the embedding feature useless; it defines its role
+as early semantic context for later prompt, activation, output, session, and tool/action evidence.
 
 For an embedding-only baseline, train a small linear classifier over the extracted input embeddings:
 
@@ -221,7 +223,9 @@ python scripts/train_embedding_linear_baseline.py \
 This baseline is a research comparison point only. If the linear baseline materially outperforms
 centroid margins, that indicates the input embedding layer contains label information that simple
 centroid contrast is not extracting. It still does not make input embeddings a final decision stage
-without held-out source-family validation.
+without held-out source-family validation. For RAMP, the more important measurement is cumulative
+value: whether embedding proximity improves routing, explanation, and fused risk when combined with
+activation and later-stage signals.
 
 ## Scoring
 
