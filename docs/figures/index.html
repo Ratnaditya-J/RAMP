@@ -116,6 +116,22 @@
         color: var(--muted);
       }
 
+      .section-heading {
+        border-top: 1px solid var(--line);
+        padding: 48px 0 8px;
+      }
+
+      .section-heading h2 {
+        margin: 0 0 8px;
+        font-size: 1.65rem;
+      }
+
+      .section-heading p {
+        max-width: 820px;
+        margin: 0;
+        color: var(--muted);
+      }
+
       img {
         display: block;
         width: 100%;
@@ -149,6 +165,9 @@
         <li><a href="#output">5. Output Classifier</a></li>
         <li><a href="#session">6. Session Risk</a></li>
         <li><a href="#audit">7. Async Audit Context</a></li>
+        <li><a href="#label-audit">8. Label Audit</a></li>
+        <li><a href="#fusion-calibration">9. Fusion Calibration</a></li>
+        <li><a href="#severity-floor">10. Severity Floor</a></li>
       </ol>
     </header>
 
@@ -228,6 +247,48 @@
           </p>
         </figcaption>
         <img src="./Streaming-UseCase.png" alt="Diagram showing asynchronous output audit context around the same RAMP evidence stages." />
+      </figure>
+
+      <section class="section-heading" aria-labelledby="implementation-detail">
+        <h2 id="implementation-detail">Implementation Detail</h2>
+        <p>
+          These figures explain the research mechanics behind the current RAMP v0 work:
+          label auditing, calibrated fusion, and severity floors that prevent dangerous
+          prompts from being averaged into an allow decision.
+        </p>
+      </section>
+
+      <figure id="label-audit">
+        <figcaption>
+          <h2>8. Noisy Labels To Reviewed Truth</h2>
+          <p>
+            Benchmark labels and classifier labels can disagree, so RAMP builds a reviewed
+            prompt-level subset before evaluating prompt classifier quality.
+          </p>
+        </figcaption>
+        <img src="./Implementation-Label-Audit.png" alt="Hand-drawn illustration showing corpus labels and Qwen labels being routed through human review into reviewed truth." />
+      </figure>
+
+      <figure id="fusion-calibration">
+        <figcaption>
+          <h2>9. Calibration, Not Hand-Tuned Weights</h2>
+          <p>
+            Fusion weights are selected on reviewed data under explicit objectives, rather
+            than chosen as arbitrary prompt, embedding, and activation weights.
+          </p>
+        </figcaption>
+        <img src="./Implementation-Fusion-Calibration.png" alt="Hand-drawn illustration showing prompt, embedding, and activation knobs searched against reviewed labels and target false-positive rate." />
+      </figure>
+
+      <figure id="severity-floor">
+        <figcaption>
+          <h2>10. Severity Floor Guardrail</h2>
+          <p>
+            High-severity prompt evidence can set a minimum risk floor so weak embedding or
+            activation signals cannot wash it below the allow threshold.
+          </p>
+        </figcaption>
+        <img src="./Implementation-Severity-Floor.png" alt="Hand-drawn illustration showing a high-severity prompt on a risk scale held above the allow threshold by a severity floor." />
       </figure>
     </main>
 
