@@ -9,8 +9,8 @@ from ramp.schemas.risk_decision import RecommendedAction, RiskDecision, RiskLeve
 DEFAULT_WEIGHTS: dict[FeatureStage, float] = {
     FeatureStage.POLICY_HEURISTICS: 0.8,
     FeatureStage.PROMPT_RISK: 1.1,
-    FeatureStage.EMBEDDING_RISK: 1.0,
-    FeatureStage.ACTIVATION_PROBE: 1.0,
+    FeatureStage.EMBEDDING_RISK: 0.8,
+    FeatureStage.ACTIVATION_PROBE: 1.3,
     FeatureStage.OUTPUT_RISK: 1.2,
     FeatureStage.SESSION_DRIFT: 1.0,
     FeatureStage.TOOL_ACTION_RISK: 1.4,
@@ -19,9 +19,9 @@ DEFAULT_WEIGHTS: dict[FeatureStage, float] = {
 
 @dataclass
 class WeightedRiskFusion:
-    """Simple calibrated-rule placeholder for partial feature fusion."""
+    """Accumulates partial RAMP feature evidence into one risk estimate."""
 
-    version: str = "risk_fusion_v0"
+    version: str = "risk_fusion_v0.1"
     weights: dict[FeatureStage, float] = field(default_factory=lambda: dict(DEFAULT_WEIGHTS))
     low_threshold: float = 0.20
     high_threshold: float = 0.78
@@ -105,7 +105,7 @@ class WeightedRiskFusion:
         tool = by_stage.get(FeatureStage.TOOL_ACTION_RISK)
 
         if prompt and embedding and prompt.risk_score < 0.30 and embedding.risk_score > 0.65:
-            disagreements.append("prompt classifier low risk but embedding risk elevated")
+            disagreements.append("prompt classifier low risk but embedding prior elevated")
         if activation and output and activation.risk_score > 0.65 and output.risk_score < 0.30:
             disagreements.append("activation probe high risk but output classifier safe")
         if output and tool and output.risk_score < 0.30 and tool.risk_score > 0.65:
