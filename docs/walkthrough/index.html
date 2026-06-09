@@ -159,15 +159,17 @@
       </p>
       <ol class="toc" aria-label="Figure order">
         <li><a href="#overview">1. Overview</a></li>
-        <li><a href="#prompt">2. Prompt Classifier</a></li>
-        <li><a href="#embedding">3. Embedding Risk</a></li>
-        <li><a href="#activation">4. Activation Probe</a></li>
-        <li><a href="#output">5. Output Classifier</a></li>
-        <li><a href="#session">6. Session Risk</a></li>
-        <li><a href="#audit">7. Async Audit Context</a></li>
-        <li><a href="#label-audit">8. Label Audit</a></li>
-        <li><a href="#fusion-calibration">9. Fusion Calibration</a></li>
-        <li><a href="#severity-floor">10. Severity Floor</a></li>
+        <li><a href="#taxonomy">2. Safety Taxonomy</a></li>
+        <li><a href="#prompt">3. Prompt Classifier</a></li>
+        <li><a href="#embedding">4. Embedding Risk</a></li>
+        <li><a href="#activation">5. Activation Probe</a></li>
+        <li><a href="#output">6. Output Classifier</a></li>
+        <li><a href="#session">7. Session Risk</a></li>
+        <li><a href="#session-classifier">8. Session Classifier v2</a></li>
+        <li><a href="#audit">9. Async Audit Context</a></li>
+        <li><a href="#label-audit">10. Label Audit</a></li>
+        <li><a href="#fusion-calibration">11. Fusion Calibration</a></li>
+        <li><a href="#severity-floor">12. Severity Floor</a></li>
       </ol>
     </header>
 
@@ -183,9 +185,20 @@
         <img src="../figures/All-Features.png" alt="Overview diagram showing multiple RAMP feature signals combining into one risk score." />
       </figure>
 
+      <figure id="taxonomy">
+        <figcaption>
+          <h2>2. Safety Taxonomy And Near Neighbors</h2>
+          <p>
+            Harmful clusters and benign near-neighbors define the semantic boundary RAMP
+            evaluates, with reviewed taxonomy patches kept as explicit provenance.
+          </p>
+        </figcaption>
+        <img src="../figures/RAMP-Taxonomy-Map.svg" alt="RAMP taxonomy map showing harmful clusters, benign near-neighbor clusters, and a self-harm taxonomy patch." />
+      </figure>
+
       <figure id="prompt">
         <figcaption>
-          <h2>2. Prompt Risk Feature</h2>
+          <h2>3. Prompt Risk Feature</h2>
           <p>
             The first explicit stage scores the raw user prompt with an interchangeable safety
             classifier backend.
@@ -196,7 +209,7 @@
 
       <figure id="embedding">
         <figcaption>
-          <h2>3. Embedding Risk Feature</h2>
+          <h2>4. Embedding Risk Feature</h2>
           <p>
             Prompt spans can be compared against harmful and benign semantic neighborhoods to
             expose risk not captured by labels alone.
@@ -207,7 +220,7 @@
 
       <figure id="activation">
         <figcaption>
-          <h2>4. Activation Probe Feature</h2>
+          <h2>5. Activation Probe Feature</h2>
           <p>
             Internal model signals can serve as another classifier feature when activations are
             available for analysis.
@@ -218,7 +231,7 @@
 
       <figure id="output">
         <figcaption>
-          <h2>5. Output Risk Feature</h2>
+          <h2>6. Output Risk Feature</h2>
           <p>
             Generated text can be scored as a later evidence stage, adding actionability,
             refusal, and unsafe-detail signals.
@@ -229,7 +242,7 @@
 
       <figure id="session">
         <figcaption>
-          <h2>6. Session Risk Feature</h2>
+          <h2>7. Session Risk Feature</h2>
           <p>
             Session-level attributes capture accumulating severity, harm drift, and multiple
             prompts that combine into a stronger risk signal.
@@ -238,9 +251,20 @@
         <img src="../figures/Session-Risk-Ledger.png" alt="Session risk ledger diagram showing prompt sequence, session attributes, and a rising session risk feature score." />
       </figure>
 
+      <figure id="session-classifier">
+        <figcaption>
+          <h2>8. Compact Session Classifier</h2>
+          <p>
+            The v2 session path selects salient turns and compact safety state instead of
+            sending every prompt in the session to a classifier.
+          </p>
+        </figcaption>
+        <img src="../figures/Session-Classifier-V2.png" alt="Hand-drawn diagram showing all session prompts, salient turn selection, compact state, session classifier, and risk over turns." />
+      </figure>
+
       <figure id="audit">
         <figcaption>
-          <h2>7. Asynchronous Audit Context</h2>
+          <h2>9. Asynchronous Audit Context</h2>
           <p>
             Deployment timing changes when evidence becomes available, but the classifier core
             still consumes the same staged signals.
@@ -260,7 +284,7 @@
 
       <figure id="label-audit">
         <figcaption>
-          <h2>8. Noisy Labels To Reviewed Truth</h2>
+          <h2>10. Noisy Labels To Reviewed Truth</h2>
           <p>
             Benchmark labels and classifier labels can disagree, so RAMP builds a reviewed
             prompt-level subset before evaluating prompt classifier quality.
@@ -271,7 +295,7 @@
 
       <figure id="fusion-calibration">
         <figcaption>
-          <h2>9. Calibration, Not Hand-Tuned Weights</h2>
+          <h2>11. Calibration, Not Hand-Tuned Weights</h2>
           <p>
             Fusion weights are selected on reviewed data under explicit objectives, rather
             than chosen as arbitrary prompt, embedding, and activation weights.
@@ -282,7 +306,7 @@
 
       <figure id="severity-floor">
         <figcaption>
-          <h2>10. Severity Floor Guardrail</h2>
+          <h2>12. Severity Floor Guardrail</h2>
           <p>
             High-severity prompt evidence can set a minimum risk floor so weak embedding or
             activation signals cannot wash it below the allow threshold.
