@@ -15,9 +15,14 @@ Suggested first figures:
 Current walkthrough order:
 
 1. `All-Features.png`
-2. `Input-Classifier.png`
-3. `Embeddings.png`
-4. `Activation-Probe.png`
-5. `Output-Classifier.png`
-6. `Session-Risk-Ledger.png`
-7. `Streaming-UseCase.png`
+2. `RAMP-Taxonomy-Map.svg`
+3. `Input-Classifier.png`
+4. `Embeddings.png`
+5. `Activation-Probe.png`
+6. `Output-Classifier.png`
+7. `Session-Risk-Ledger.png`
+8. `Session-Classifier-V2.png`
+9. `Streaming-UseCase.png`
+10. `Implementation-Label-Audit.png`
+11. `Implementation-Fusion-Calibration.png`
+12. `Implementation-Severity-Floor.png`

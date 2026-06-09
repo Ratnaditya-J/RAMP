@@ -1,0 +1,365 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1310" viewBox="0 0 1440 1310" role="img" aria-label="RAMP safety taxonomy map">
+  <style>
+    .bg { fill: #f8fafc; }
+    .eyebrow { font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: .08em; text-transform: uppercase; fill: #64748b; }
+    .title { font: 800 44px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #0f172a; }
+    .subtitle { font: 500 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #475569; }
+    .domain-card rect { filter: drop-shadow(0 18px 32px rgba(15, 23, 42, .07)); }
+    .highlighted rect { filter: drop-shadow(0 18px 38px rgba(180, 83, 9, .16)); }
+    .group-label { font: 700 11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: .06em; text-transform: uppercase; fill: #64748b; }
+    .domain-title { font: 800 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #0f172a; }
+    .pill-text { font: 700 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .mini-label { font: 500 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #475569; }
+    .dark-title { font: 800 20px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #ffffff; }
+    .dark-copy { font: 500 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #cbd5e1; }
+    .legend-title { font: 800 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #0f172a; }
+  </style>
+  <rect class="bg" width="1440" height="1310"/>
+  <text class="eyebrow" x="56" y="70">RAMP taxonomy v0.1</text>
+  <text class="title" x="54" y="124">Safety clusters and near-neighbor contrasts</text>
+  <text class="subtitle" x="56" y="162">Harmful clusters define risky intent; benign near-neighbors define the safe boundary cases RAMP must avoid overblocking.</text>
+  
+    <g>
+      <rect x="56" y="190" width="146" height="26" rx="13" fill="#fff7ed" stroke="#c2410c" stroke-opacity="0.35"/>
+      <text class="pill-text" x="69" y="207" fill="#c2410c">harmful clusters</text>
+    </g>
+    
+  
+    <g>
+      <rect x="218" y="190" width="190" height="26" rx="13" fill="#ecfdf5" stroke="#047857" stroke-opacity="0.35"/>
+      <text class="pill-text" x="231" y="207" fill="#047857">benign near-neighbors</text>
+    </g>
+    
+  
+    <g>
+      <rect x="966" y="62" width="420" height="104" rx="18" fill="#111827"/>
+      <text class="dark-title" x="990" y="97">Taxonomy patch queue</text>
+      <text class="dark-copy" x="990" y="129">1 correction overlay: bench_comp_0014981 remapped to self harm and wellbeing / suicidal ideation or crisis.</text>
+    </g>
+    
+  
+    <g class="domain-card">
+      <rect x="54" y="238" width="420" height="154" rx="18" fill="#ffffff" stroke="#d6dee8"/>
+      <text class="group-label" x="76" y="266">Direct harm</text>
+      
+      <text class="domain-title" x="76" y="294">cbrn and hazardous materials</text>
+      
+    <g>
+      <rect x="76" y="328" width="116" height="26" rx="13" fill="#fff7ed" stroke="#c2410c" stroke-opacity="0.35"/>
+      <text class="pill-text" x="89" y="345" fill="#c2410c">8 harmful</text>
+    </g>
+    
+      
+    <g>
+      <rect x="202" y="328" width="112" height="26" rx="13" fill="#ecfdf5" stroke="#047857" stroke-opacity="0.35"/>
+      <text class="pill-text" x="215" y="345" fill="#047857">8 benign</text>
+    </g>
+    
+      <text class="mini-label" x="76" y="373">Harmful: chemical misuse procedure, unsafe synthesis, biological amplification, pathogen acquisition, ...</text>
+      <text class="mini-label" x="76" y="395">Benign: basic science education, lab safety, safe handling storage, disposal cleanup, ...</text>
+    </g>
+    
+    <g class="domain-card">
+      <rect x="510" y="238" width="420" height="154" rx="18" fill="#ffffff" stroke="#d6dee8"/>
+      <text class="group-label" x="532" y="266">Direct harm</text>
+      
+      <text class="domain-title" x="532" y="294">child safety</text>
+      
+    <g>
+      <rect x="532" y="328" width="116" height="26" rx="13" fill="#fff7ed" stroke="#c2410c" stroke-opacity="0.35"/>
+      <text class="pill-text" x="545" y="345" fill="#c2410c">6 harmful</text>
+    </g>
+    
+      
+    <g>
+      <rect x="658" y="328" width="112" height="26" rx="13" fill="#ecfdf5" stroke="#047857" stroke-opacity="0.35"/>
+      <text class="pill-text" x="671" y="345" fill="#047857">5 benign</text>
+    </g>
+    
+      <text class="mini-label" x="532" y="373">Harmful: csam, grooming, sexualized minors, child exploitation, ...</text>
+      <text class="mini-label" x="532" y="395">Benign: reporting guidance, prevention education, victim support, age appropriate safety, ...</text>
+    </g>
+    
+    <g class="domain-card">
+      <rect x="966" y="238" width="420" height="154" rx="18" fill="#ffffff" stroke="#d6dee8"/>
+      <text class="group-label" x="988" y="266">Direct harm</text>
+      
+      <text class="domain-title" x="988" y="294">critical infrastructure and</text>
+<text class="domain-title" x="988" y="314">sabotage</text>
+      
+    <g>
+      <rect x="988" y="328" width="116" height="26" rx="13" fill="#fff7ed" stroke="#c2410c" stroke-opacity="0.35"/>
+      <text class="pill-text" x="1001" y="345" fill="#c2410c">6 harmful</text>
+    </g>
+    
+      
+    <g>
+      <rect x="1114" y="328" width="112" height="26" rx="13" fill="#ecfdf5" stroke="#047857" stroke-opacity="0.35"/>
+      <text class="pill-text" x="1127" y="345" fill="#047857">5 benign</text>
+    </g>
+    
+      <text class="mini-label" x="988" y="373">Harmful: infrastructure disruption, sabotage planning, industrial control abuse, transport or energy attack, ...</text>
+      <text class="mini-label" x="988" y="395">Benign: resilience planning, safety audit, disaster preparedness, high level threat modeling, ...</text>
+    </g>
+    
+    <g class="domain-card">
+      <rect x="54" y="422" width="420" height="154" rx="18" fill="#ffffff" stroke="#d6dee8"/>
+      <text class="group-label" x="76" y="450">Direct harm</text>
+      
+      <text class="domain-title" x="76" y="478">cyber abuse</text>
+      
+    <g>
+      <rect x="76" y="512" width="116" height="26" rx="13" fill="#fff7ed" stroke="#c2410c" stroke-opacity="0.35"/>
+      <text class="pill-text" x="89" y="529" fill="#c2410c">10 harmful</text>
+    </g>
+    
+      
+    <g>
+      <rect x="202" y="512" width="112" height="26" rx="13" fill="#ecfdf5" stroke="#047857" stroke-opacity="0.35"/>
+      <text class="pill-text" x="215" y="529" fill="#047857">8 benign</text>
+    </g>
+    
+      <text class="mini-label" x="76" y="557">Harmful: unauthorized access, credential theft, phishing social engineering, malware or payloads, ...</text>
+      <text class="mini-label" x="76" y="579">Benign: defensive security, secure coding, patching hardening, incident response, ...</text>
+    </g>
+    
+    <g class="domain-card">
+      <rect x="510" y="422" width="420" height="154" rx="18" fill="#ffffff" stroke="#d6dee8"/>
+      <text class="group-label" x="532" y="450">Direct harm</text>
+      
+      <text class="domain-title" x="532" y="478">nonviolent illegal activity</text>
+      
+    <g>
+      <rect x="532" y="512" width="116" height="26" rx="13" fill="#fff7ed" stroke="#c2410c" stroke-opacity="0.35"/>
+      <text class="pill-text" x="545" y="529" fill="#c2410c">8 harmful</text>
+    </g>
+    
+      
+    <g>
+      <rect x="658" y="512" width="112" height="26" rx="13" fill="#ecfdf5" stroke="#047857" stroke-opacity="0.35"/>
+      <text class="pill-text" x="671" y="529" fill="#047857">6 benign</text>
+    </g>
+    
+      <text class="mini-label" x="532" y="557">Harmful: fraud scams, theft or property crime, forgery fake documents, money laundering, ...</text>
+      <text class="mini-label" x="532" y="579">Benign: fraud awareness, compliance, legal alternatives, recovery guidance, ...</text>
+    </g>
+    
+    <g class="domain-card highlighted">
+      <rect x="966" y="422" width="420" height="176" rx="18" fill="#ffffff" stroke="#b45309"/>
+      <text class="group-label" x="988" y="450">Direct harm</text>
+      
+    <g>
+      <rect x="1258" y="438" width="92" height="26" rx="13" fill="#fffbeb" stroke="#b45309" stroke-opacity="0.35"/>
+      <text class="pill-text" x="1271" y="455" fill="#b45309">patched</text>
+    </g>
+    
+      <text class="domain-title" x="988" y="478">self harm and wellbeing</text>
+      
+    <g>
+      <rect x="988" y="512" width="116" height="26" rx="13" fill="#fff7ed" stroke="#c2410c" stroke-opacity="0.35"/>
+      <text class="pill-text" x="1001" y="529" fill="#c2410c">7 harmful</text>
+    </g>
+    
+      
+    <g>
+      <rect x="1114" y="512" width="112" height="26" rx="13" fill="#ecfdf5" stroke="#047857" stroke-opacity="0.35"/>
+      <text class="pill-text" x="1127" y="529" fill="#047857">7 benign</text>
+    </g>
+    
+      <text class="mini-label" x="988" y="557">Harmful: suicidal ideation or crisis, suicide methods, self injury methods, self harm encouragement, ...</text>
+      <text class="mini-label" x="988" y="579">Benign: crisis support, supportive intervention, mental health education, recovery guidance, ...</text>
+    </g>
+    
+    <g class="domain-card">
+      <rect x="54" y="606" width="420" height="154" rx="18" fill="#ffffff" stroke="#d6dee8"/>
+      <text class="group-label" x="76" y="634">Direct harm</text>
+      
+      <text class="domain-title" x="76" y="662">weapons and physical</text>
+<text class="domain-title" x="76" y="682">violence</text>
+      
+    <g>
+      <rect x="76" y="696" width="116" height="26" rx="13" fill="#fff7ed" stroke="#c2410c" stroke-opacity="0.35"/>
+      <text class="pill-text" x="89" y="713" fill="#c2410c">8 harmful</text>
+    </g>
+    
+      
+    <g>
+      <rect x="202" y="696" width="112" height="26" rx="13" fill="#ecfdf5" stroke="#047857" stroke-opacity="0.35"/>
+      <text class="pill-text" x="215" y="713" fill="#047857">7 benign</text>
+    </g>
+    
+      <text class="mini-label" x="76" y="741">Harmful: violent attack planning, threats or intimidation, weapon construction, weapon modification, ...</text>
+      <text class="mini-label" x="76" y="763">Benign: de escalation, self defense safety, historical analysis, fictional non instructional, ...</text>
+    </g>
+    
+    <g class="domain-card">
+      <rect x="510" y="606" width="420" height="154" rx="18" fill="#ffffff" stroke="#d6dee8"/>
+      <text class="group-label" x="532" y="634">Information and identity</text>
+      
+      <text class="domain-title" x="532" y="662">ip and content rights</text>
+      
+    <g>
+      <rect x="532" y="696" width="116" height="26" rx="13" fill="#fff7ed" stroke="#c2410c" stroke-opacity="0.35"/>
+      <text class="pill-text" x="545" y="713" fill="#c2410c">6 harmful</text>
+    </g>
+    
+      
+    <g>
+      <rect x="658" y="696" width="112" height="26" rx="13" fill="#ecfdf5" stroke="#047857" stroke-opacity="0.35"/>
+      <text class="pill-text" x="671" y="713" fill="#047857">7 benign</text>
+    </g>
+    
+      <text class="mini-label" x="532" y="741">Harmful: copyright reproduction, piracy enablement, paywall or license evasion, trade secret extraction, ...</text>
+      <text class="mini-label" x="532" y="763">Benign: summary, critique, citation, public domain, ...</text>
+    </g>
+    
+    <g class="domain-card">
+      <rect x="966" y="628" width="420" height="154" rx="18" fill="#ffffff" stroke="#d6dee8"/>
+      <text class="group-label" x="988" y="656">Information and identity</text>
+      
+      <text class="domain-title" x="988" y="684">misinformation manipulation</text>
+<text class="domain-title" x="988" y="704">and civic</text>
+      
+    <g>
+      <rect x="988" y="718" width="116" height="26" rx="13" fill="#fff7ed" stroke="#c2410c" stroke-opacity="0.35"/>
+      <text class="pill-text" x="1001" y="735" fill="#c2410c">8 harmful</text>
+    </g>
+    
+      
+    <g>
+      <rect x="1114" y="718" width="112" height="26" rx="13" fill="#ecfdf5" stroke="#047857" stroke-opacity="0.35"/>
+      <text class="pill-text" x="1127" y="735" fill="#047857">6 benign</text>
+    </g>
+    
+      <text class="mini-label" x="988" y="763">Harmful: election falsehoods, voter suppression, influence operations, targeted political persuasion, ...</text>
+      <text class="mini-label" x="988" y="785">Benign: civic education, fact checking, media literacy, neutral political analysis, ...</text>
+    </g>
+    
+    <g class="domain-card">
+      <rect x="54" y="790" width="420" height="154" rx="18" fill="#ffffff" stroke="#d6dee8"/>
+      <text class="group-label" x="76" y="818">Information and identity</text>
+      
+      <text class="domain-title" x="76" y="846">privacy identity and secrets</text>
+      
+    <g>
+      <rect x="76" y="880" width="116" height="26" rx="13" fill="#fff7ed" stroke="#c2410c" stroke-opacity="0.35"/>
+      <text class="pill-text" x="89" y="897" fill="#c2410c">8 harmful</text>
+    </g>
+    
+      
+    <g>
+      <rect x="202" y="880" width="112" height="26" rx="13" fill="#ecfdf5" stroke="#047857" stroke-opacity="0.35"/>
+      <text class="pill-text" x="215" y="897" fill="#047857">6 benign</text>
+    </g>
+    
+      <text class="mini-label" x="76" y="925">Harmful: pii extraction, doxxing, credential or token leakage, deanonymization, ...</text>
+      <text class="mini-label" x="76" y="947">Benign: privacy law, consented data handling, redaction, synthetic examples, ...</text>
+    </g>
+    
+    <g class="domain-card">
+      <rect x="510" y="790" width="420" height="154" rx="18" fill="#ffffff" stroke="#d6dee8"/>
+      <text class="group-label" x="532" y="818">Information and identity</text>
+      
+      <text class="domain-title" x="532" y="846">regulated advice</text>
+      
+    <g>
+      <rect x="532" y="880" width="116" height="26" rx="13" fill="#fff7ed" stroke="#c2410c" stroke-opacity="0.35"/>
+      <text class="pill-text" x="545" y="897" fill="#c2410c">5 harmful</text>
+    </g>
+    
+      
+    <g>
+      <rect x="658" y="880" width="112" height="26" rx="13" fill="#ecfdf5" stroke="#047857" stroke-opacity="0.35"/>
+      <text class="pill-text" x="671" y="897" fill="#047857">6 benign</text>
+    </g>
+    
+      <text class="mini-label" x="532" y="925">Harmful: tailored medical diagnosis or treatment, tailored legal strategy, tailored financial investment advice, unsafe professional instruction, ...</text>
+      <text class="mini-label" x="532" y="947">Benign: general information, scientific consensus, consult professional guidance, educational overview, ...</text>
+    </g>
+    
+    <g class="domain-card">
+      <rect x="966" y="812" width="420" height="154" rx="18" fill="#ffffff" stroke="#d6dee8"/>
+      <text class="group-label" x="988" y="840">Social and agentic integrity</text>
+      
+      <text class="domain-title" x="988" y="868">agent tool and system</text>
+<text class="domain-title" x="988" y="888">integrity</text>
+      
+    <g>
+      <rect x="988" y="902" width="116" height="26" rx="13" fill="#fff7ed" stroke="#c2410c" stroke-opacity="0.35"/>
+      <text class="pill-text" x="1001" y="919" fill="#c2410c">9 harmful</text>
+    </g>
+    
+      
+    <g>
+      <rect x="1114" y="902" width="112" height="26" rx="13" fill="#ecfdf5" stroke="#047857" stroke-opacity="0.35"/>
+      <text class="pill-text" x="1127" y="919" fill="#047857">6 benign</text>
+    </g>
+    
+      <text class="mini-label" x="988" y="947">Harmful: prompt injection, system prompt extraction, jailbreak, tool hijacking, ...</text>
+      <text class="mini-label" x="988" y="969">Benign: authorized red team, prompt injection defense, sandboxed testing, safe tool use, ...</text>
+    </g>
+    
+    <g class="domain-card">
+      <rect x="54" y="974" width="420" height="154" rx="18" fill="#ffffff" stroke="#d6dee8"/>
+      <text class="group-label" x="76" y="1002">Social and agentic integrity</text>
+      
+      <text class="domain-title" x="76" y="1030">hate harassment and abuse</text>
+      
+    <g>
+      <rect x="76" y="1064" width="116" height="26" rx="13" fill="#fff7ed" stroke="#c2410c" stroke-opacity="0.35"/>
+      <text class="pill-text" x="89" y="1081" fill="#c2410c">7 harmful</text>
+    </g>
+    
+      
+    <g>
+      <rect x="202" y="1064" width="112" height="26" rx="13" fill="#ecfdf5" stroke="#047857" stroke-opacity="0.35"/>
+      <text class="pill-text" x="215" y="1081" fill="#047857">6 benign</text>
+    </g>
+    
+      <text class="mini-label" x="76" y="1109">Harmful: protected class hate, dehumanization, slurs or abuse, targeted harassment, ...</text>
+      <text class="mini-label" x="76" y="1131">Benign: counterspeech, moderation review, quoted content with context, academic analysis, ...</text>
+    </g>
+    
+    <g class="domain-card">
+      <rect x="510" y="974" width="420" height="154" rx="18" fill="#ffffff" stroke="#d6dee8"/>
+      <text class="group-label" x="532" y="1002">Social and agentic integrity</text>
+      
+      <text class="domain-title" x="532" y="1030">model autonomy and control</text>
+      
+    <g>
+      <rect x="532" y="1064" width="116" height="26" rx="13" fill="#fff7ed" stroke="#c2410c" stroke-opacity="0.35"/>
+      <text class="pill-text" x="545" y="1081" fill="#c2410c">9 harmful</text>
+    </g>
+    
+      
+    <g>
+      <rect x="658" y="1064" width="112" height="26" rx="13" fill="#ecfdf5" stroke="#047857" stroke-opacity="0.35"/>
+      <text class="pill-text" x="671" y="1081" fill="#047857">6 benign</text>
+    </g>
+    
+      <text class="mini-label" x="532" y="1109">Harmful: deception, sandbagging, hidden goals, reward hacking, ...</text>
+      <text class="mini-label" x="532" y="1131">Benign: alignment research, interpretability, safety monitoring, audit traces, ...</text>
+    </g>
+    
+    <g class="domain-card">
+      <rect x="966" y="996" width="420" height="154" rx="18" fill="#ffffff" stroke="#d6dee8"/>
+      <text class="group-label" x="988" y="1024">Social and agentic integrity</text>
+      
+      <text class="domain-title" x="988" y="1052">sexual safety and content</text>
+      
+    <g>
+      <rect x="988" y="1086" width="116" height="26" rx="13" fill="#fff7ed" stroke="#c2410c" stroke-opacity="0.35"/>
+      <text class="pill-text" x="1001" y="1103" fill="#c2410c">6 harmful</text>
+    </g>
+    
+      
+    <g>
+      <rect x="1114" y="1086" width="112" height="26" rx="13" fill="#ecfdf5" stroke="#047857" stroke-opacity="0.35"/>
+      <text class="pill-text" x="1127" y="1103" fill="#047857">6 benign</text>
+    </g>
+    
+      <text class="mini-label" x="988" y="1131">Harmful: sexual violence, coercion or exploitation, nonconsensual intimate content, sexual harassment, ...</text>
+      <text class="mini-label" x="988" y="1153">Benign: sexual health education, consent discussion, medical or anatomy context, support resources, ...</text>
+    </g>
+    
+</svg>
