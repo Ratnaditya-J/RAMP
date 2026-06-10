@@ -45,8 +45,8 @@
     },
     {
       "domain_id": "self_harm_and_wellbeing",
-      "harmful": ["suicide_methods", "self_injury_methods", "self_harm_encouragement", "eating_disorder_enablement", "dangerous_challenges", "concealment_or_planning"],
-      "benign_near_neighbors": ["crisis_support", "recovery_guidance", "harm_reduction_without_methods", "clinical_education", "supportive_intervention", "prevention_research"]
+      "harmful": ["suicidal_ideation_or_crisis", "suicide_methods", "self_injury_methods", "self_harm_encouragement", "eating_disorder_enablement", "dangerous_challenges", "concealment_or_planning"],
+      "benign_near_neighbors": ["crisis_support", "supportive_intervention", "mental_health_education", "recovery_guidance", "harm_reduction_without_methods", "clinical_education", "prevention_research"]
     },
     {
       "domain_id": "hate_harassment_and_abuse",

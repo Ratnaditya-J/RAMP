@@ -135,3 +135,12 @@ def test_source_manifest_has_expected_benchmark_coverage() -> None:
         assert source["recommended_use"]
         assert source["domains"]
         assert source["roles"]
+
+
+def test_taxonomy_contains_self_harm_ideation_patch() -> None:
+    taxonomy = json.loads(TAXONOMY_PATH.read_text(encoding="utf-8"))
+    domain_map = {domain["domain_id"]: domain for domain in taxonomy["domains"]}
+    self_harm = domain_map["self_harm_and_wellbeing"]
+
+    assert "suicidal_ideation_or_crisis" in self_harm["harmful"]
+    assert "mental_health_education" in self_harm["benign_near_neighbors"]

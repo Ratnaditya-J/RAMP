@@ -23,12 +23,21 @@ from ramp.features.embedding_risk import (
 )
 from ramp.features.output_risk import KeywordOutputRiskFeature
 from ramp.features.prompt_risk import KeywordPromptRiskFeature
+from ramp.features.qwen3guard_output_risk import Qwen3GuardOutputRiskFeature
 from ramp.features.qwen3guard_prompt_risk import (
     DEFAULT_QWEN3GUARD_MODEL,
     RESEARCH_QWEN3GUARD_MODEL,
     Qwen3GuardPromptRiskFeature,
 )
 from ramp.features.session_drift import RollingSessionDriftFeature
+from ramp.features.session_state_risk import (
+    CompactSessionRiskFeature,
+    CompactSessionRiskScorer,
+    FullTranscriptLexicalSessionScorer,
+    SessionStateUpdater,
+    render_compact_session_evidence,
+    render_full_transcript_evidence,
+)
 from ramp.features.tool_action_risk import SideEffectToolActionRiskFeature
 
 __all__ = [
@@ -51,8 +60,15 @@ __all__ = [
     "DEFAULT_QWEN3GUARD_MODEL",
     "RESEARCH_QWEN3GUARD_MODEL",
     "Qwen3GuardPromptRiskFeature",
+    "Qwen3GuardOutputRiskFeature",
+    "CompactSessionRiskFeature",
+    "CompactSessionRiskScorer",
+    "FullTranscriptLexicalSessionScorer",
     "RollingSessionDriftFeature",
+    "SessionStateUpdater",
     "SideEffectToolActionRiskFeature",
+    "render_compact_session_evidence",
+    "render_full_transcript_evidence",
     "StubActivationProbeFeature",
     "cosine_similarity",
     "demo_benign_clusters",

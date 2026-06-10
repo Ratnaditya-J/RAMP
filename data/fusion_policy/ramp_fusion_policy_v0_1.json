@@ -1,0 +1,67 @@
+{
+  "artifact_id": "ramp_fusion_policy_v0.1",
+  "created_from": {
+    "calibration_report": ".artifacts/prompt_label_audit/ramp_calibrated_signal_combinations_expanded_reviewed_activation_v0_1.json",
+    "feature_table": ".artifacts/cumulative_signal_eval/ramp_qwen3guard_prompt_internal_signal_feature_table_expanded_reviewed_activation_v0_1.jsonl",
+    "review_csv": "/Users/ratnaditya/Documents/ramp_prompt_label_review_combined_v0_1_v0_2_v0_4_cleaned.csv",
+    "reviewed_activation_probe": ".artifacts/activation_probes/ramp_reviewed_activation_probe_layer_19_expanded_v0_1.json"
+  },
+  "decision": "prompt_activation_runtime_policy",
+  "rationale": "On 30 deterministic reviewed-label splits with 448 binary reviewed rows, prompt+activation matched or exceeded full prompt+embedding+activation on the primary runtime tradeoff. Full fusion had nearly identical AUC but higher false-positive rate, so embedding is retained as a secondary taxonomy/audit signal rather than a positive v0 runtime weight.",
+  "selected_runtime_score": {
+    "method": "weighted_sum",
+    "threshold": 0.53,
+    "weights": {
+      "prompt_risk_score": 0.25,
+      "activation_probability": 0.75,
+      "embedding_prior_score": 0.0
+    }
+  },
+  "reviewed_split_stability": {
+    "num_splits": 30,
+    "binary_reviewed_rows": 448,
+    "prompt_only_calibrated": {
+      "auc_mean": 0.9425150027277687,
+      "recall_mean": 0.9694871794871796,
+      "false_positive_rate_mean": 0.1326241134751773,
+      "false_positive_count_mean": 12.466666666666667,
+      "false_negative_count_mean": 3.966666666666667
+    },
+    "prompt_embedding_calibrated": {
+      "auc_mean": 0.9592498636115657,
+      "recall_mean": 0.9574358974358975,
+      "false_positive_rate_mean": 0.11063829787234042,
+      "false_positive_count_mean": 10.4,
+      "false_negative_count_mean": 5.533333333333333
+    },
+    "prompt_activation_calibrated": {
+      "auc_mean": 0.9938625204582652,
+      "recall_mean": 0.9625641025641026,
+      "false_positive_rate_mean": 0.039716312056737584,
+      "false_positive_count_mean": 3.7333333333333334,
+      "false_negative_count_mean": 4.866666666666666,
+      "most_common_weights": {
+        "prompt_risk_score": 0.25,
+        "activation_probability": 0.75
+      },
+      "most_common_threshold": 0.53
+    },
+    "prompt_embedding_activation_calibrated": {
+      "auc_mean": 0.9938516093835242,
+      "recall_mean": 0.9633333333333334,
+      "false_positive_rate_mean": 0.0450354609929078,
+      "false_positive_count_mean": 4.233333333333333,
+      "false_negative_count_mean": 4.766666666666667
+    }
+  },
+  "embedding_policy": {
+    "runtime_weight_v0": 0.0,
+    "status": "secondary_taxonomy_and_audit_signal",
+    "reason": "Embedding improves over prompt-only as a boundary signal, but full prompt+embedding+activation did not beat prompt+activation on the expanded reviewed split-stability run."
+  },
+  "limitations": [
+    "The expanded reviewed activation probe is trained on targeted hard cases rather than a broad prompt distribution.",
+    "The selected threshold is the most common split-selected threshold, not a separately optimized deployment threshold.",
+    "The policy should be revisited after output-classifier and session-level signals are added."
+  ]
+}

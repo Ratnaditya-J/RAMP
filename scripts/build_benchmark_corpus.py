@@ -67,8 +67,25 @@ def domain_guess(text: str) -> tuple[str, str, str]:
         return "cbrn_and_hazardous_materials", "harmful", "chemical_misuse_procedure"
     if any(term in lowered for term in ("weapon", "explosive", "bomb", "firearm", "attack")):
         return "weapons_and_physical_violence", "harmful", "weapon_construction"
-    if any(term in lowered for term in ("suicide", "self-harm", "self harm")):
-        return "self_harm_and_wellbeing", "harmful", "suicide_methods"
+    if any(
+        term in lowered
+        for term in (
+            "suicide",
+            "suicidal",
+            "self-harm",
+            "self harm",
+            "taking my own life",
+            "take my own life",
+            "end my life",
+            "kill myself",
+        )
+    ):
+        if any(
+            term in lowered
+            for term in ("method", "methods", "how to", "step", "instructions", "painless")
+        ):
+            return "self_harm_and_wellbeing", "harmful", "suicide_methods"
+        return "self_harm_and_wellbeing", "harmful", "suicidal_ideation_or_crisis"
     if any(term in lowered for term in ("child", "minor", "underage")):
         return "child_safety", "harmful", "sexualized_minors"
     if any(term in lowered for term in ("dox", "private", "token", "api key", "ssn")):
@@ -98,6 +115,11 @@ def benign_guess(text: str) -> tuple[str, str, str]:
         return "cbrn_and_hazardous_materials", "benign_near_neighbor", "lab_safety"
     if any(term in lowered for term in ("history", "fiction", "news", "policy")):
         return "weapons_and_physical_violence", "benign_near_neighbor", "historical_analysis"
+    if any(
+        term in lowered
+        for term in ("mental health", "therapy", "therapist", "wellbeing", "well-being")
+    ):
+        return "self_harm_and_wellbeing", "benign_near_neighbor", "mental_health_education"
     if any(term in lowered for term in ("privacy", "redact", "personal data")):
         return "privacy_identity_and_secrets", "benign_near_neighbor", "redaction"
     return "regulated_advice", "benign_near_neighbor", "general_information"

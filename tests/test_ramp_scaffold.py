@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 
 from ramp.features import FeatureInput
+from ramp.features.qwen3guard_output_risk import Qwen3GuardOutputRiskFeature
 from ramp.pipeline import default_pipeline
 from ramp.risk_state import RiskState
 from ramp.schemas.feature_result import FeatureStage
@@ -88,6 +89,14 @@ class RampScaffoldTest(unittest.TestCase):
         tool_feature = state.feature(FeatureStage.TOOL_ACTION_RISK)
         self.assertIsNotNone(tool_feature)
         self.assertIn("required_approval", tool_feature.metadata)
+
+    def test_default_pipeline_can_select_qwen_output_backend(self) -> None:
+        pipeline = default_pipeline(output_risk_backend="qwen3guard")
+
+        self.assertIsInstance(
+            pipeline.features[FeatureStage.OUTPUT_RISK],
+            Qwen3GuardOutputRiskFeature,
+        )
 
 
 if __name__ == "__main__":

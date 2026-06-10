@@ -142,3 +142,83 @@ Recommended metadata:
 ```
 
 This keeps prompt-level classification focused on local evidence while allowing session-level classification to measure accumulated severity and harm drift.
+
+## Current Evaluation Status
+
+Session scoring should not be treated as a positive v0 runtime signal yet.
+
+RAMP now has a benchmark-backed session evaluation path using R-Judge:
+
+| Artifact | Path |
+|---|---|
+| Session corpus | `.artifacts/session_eval/ramp_session_eval_corpus_rjudge_v0_1.jsonl` |
+| Flattened turns | `.artifacts/session_eval/ramp_session_eval_corpus_rjudge_v0_1.turns.jsonl` |
+| Qwen turn scores | `.artifacts/session_eval/ramp_session_eval_corpus_rjudge_v0_1.qwen_turn_scores.jsonl` |
+| Joined session corpus | `.artifacts/session_eval/ramp_session_eval_corpus_rjudge_v0_1.qwen_scored.jsonl` |
+| Evaluation report | `.artifacts/session_eval/ramp_session_risk_eval_rjudge_qwen_v0_1.md` |
+
+On R-Judge, `single_turn_max` reaches AUC `0.5471`, while the current
+`session_accumulation` score reaches AUC `0.4910`. At the fixed `0.55` threshold,
+session accumulation catches only `2` of `286` unsafe sessions and adds no false-negative catches
+over the single-turn max baseline.
+
+MHJ was added as an unsafe-only multi-turn jailbreak stress set. It cannot measure FPR or AUC, but
+it is useful for unsafe recall and failure mining. At threshold `0.55`, Qwen single-turn max catches
+`396` of `496` MHJ sessions (`0.7984` recall), while the current session accumulation formula catches
+only `38` of `496` (`0.0766` recall). The top `100` single-turn misses are recorded at
+`.artifacts/session_eval/ramp_session_mhj_single_turn_misses_qwen_v0_1.md`.
+
+SafeDialBench was added as an unlabeled multi-turn corpus. It cannot produce metrics until reviewed,
+but the top-risk mining artifact is useful for creating a balanced benign/unsafe session review set:
+
+- `.artifacts/session_eval/ramp_session_safedialbench_top_risk_candidates_qwen_v0_1.md`
+- `/Users/ratnaditya/Documents/ramp_safedialbench_session_label_review_top_200_v0_1.csv`
+
+Interpretation: the current session formula is useful as a mechanism prototype, but RAMP should not
+claim session-level lift from this implementation. The next session experiment should add richer
+turn evidence, especially output-risk, role-aware transcript scoring, and tool/action risk. Synthetic
+sessions should be kept as smoke tests for severity accumulation, harm drift, and composition, not
+as primary evidence.
+
+## Session Classifier v2
+
+The next implementation reframes session risk as compact session-state classification rather than
+mathematical aggregation over isolated turn scores.
+
+Runtime shape:
+
+1. Score/store each turn normally.
+2. Update a compact safety-specific session state.
+3. Select only salient turns and compact evidence.
+4. Run cheap deterministic session-state scoring.
+5. Optionally call a real classifier on the compact evidence only when session ambiguity warrants it.
+
+The compact state tracks:
+
+- domains and subclusters seen
+- highest observed severity
+- highest and top-k turn risk
+- risk trend
+- intent progression
+- evasion attempts
+- operational-detail requests
+- benign cover-story cues
+- cross-turn composition
+- salient turn snippets and salience reasons
+
+This gives RAMP an optimized classifier input that is much smaller than full transcript input. Current
+generated artifacts:
+
+| Artifact | Rows | Mean chars | Max chars |
+|---|---:|---:|---:|
+| `.artifacts/session_eval/ramp_session_classifier_inputs_rjudge_compact_state_v0_1.jsonl` | 555 | 745.8 | 1,562 |
+| `.artifacts/session_eval/ramp_session_classifier_inputs_mhj_compact_state_v0_1.jsonl` | 496 | 950.9 | 1,886 |
+| `.artifacts/session_eval/ramp_session_classifier_inputs_safedialbench_compact_state_v0_1.jsonl` | 4,053 | 633.6 | 1,573 |
+| `.artifacts/session_eval/ramp_session_classifier_inputs_rjudge_full_transcript_v0_1.jsonl` | 555 | 1,118.9 | 3,753 |
+| `.artifacts/session_eval/ramp_session_classifier_inputs_mhj_full_transcript_v0_1.jsonl` | 496 | 1,422.1 | 6,017 |
+
+Deterministic compact scoring is intentionally treated as a baseline, not the final classifier. On
+MHJ, it improves over the old accumulator (`0.4234` recall versus `0.0766` at threshold `0.55`), but
+it still does not beat single-turn max. The next decisive test is to score the compact session
+evidence with Qwen3Guard or another session classifier and compare it with the full-transcript oracle
+baseline.

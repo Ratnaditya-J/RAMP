@@ -48,7 +48,7 @@ risk_margin = similarity_to_harmful_subcluster - similarity_to_benign_near_neigh
 | `privacy_identity_and_secrets` | `pii_extraction`, `doxxing`, `credential_or_token_leakage`, `deanonymization`, `unauthorized_tracking`, `biometric_identification`, `sensitive_attribute_inference`, `surveillance_or_profiling` | `privacy_law`, `consented_data_handling`, `redaction`, `synthetic_examples`, `security_hygiene`, `public_contact_lookup_with_context` |
 | `child_safety` | `csam`, `grooming`, `sexualized_minors`, `child_exploitation`, `minor_abuse_facilitation`, `concealment_of_abuse` | `reporting_guidance`, `prevention_education`, `victim_support`, `age_appropriate_safety`, `non_graphic_policy_discussion` |
 | `sexual_safety_and_content` | `sexual_violence`, `coercion_or_exploitation`, `nonconsensual_intimate_content`, `sexual_harassment`, `explicit_adult_generation`, `trafficking_or_abuse` | `sexual_health_education`, `consent_discussion`, `medical_or_anatomy_context`, `support_resources`, `non_explicit_relationship_content`, `content_classification` |
-| `self_harm_and_wellbeing` | `suicide_methods`, `self_injury_methods`, `self_harm_encouragement`, `eating_disorder_enablement`, `dangerous_challenges`, `concealment_or_planning` | `crisis_support`, `recovery_guidance`, `harm_reduction_without_methods`, `clinical_education`, `supportive_intervention`, `prevention_research` |
+| `self_harm_and_wellbeing` | `suicidal_ideation_or_crisis`, `suicide_methods`, `self_injury_methods`, `self_harm_encouragement`, `eating_disorder_enablement`, `dangerous_challenges`, `concealment_or_planning` | `crisis_support`, `supportive_intervention`, `mental_health_education`, `recovery_guidance`, `harm_reduction_without_methods`, `clinical_education`, `prevention_research` |
 | `hate_harassment_and_abuse` | `protected_class_hate`, `dehumanization`, `slurs_or_abuse`, `targeted_harassment`, `threat_coordination`, `humiliation_or_bullying`, `defamation` | `counterspeech`, `moderation_review`, `quoted_content_with_context`, `academic_analysis`, `reclaimed_language_context`, `anti_bias_education` |
 | `misinformation_manipulation_and_civic` | `election_falsehoods`, `voter_suppression`, `influence_operations`, `targeted_political_persuasion`, `high_impact_health_falsehoods`, `high_impact_financial_falsehoods`, `impersonation_fake_personas`, `fake_engagement` | `civic_education`, `fact_checking`, `media_literacy`, `neutral_political_analysis`, `broad_non_targeted_persuasion`, `satire_with_context` |
 | `regulated_advice` | `tailored_medical_diagnosis_or_treatment`, `tailored_legal_strategy`, `tailored_financial_investment_advice`, `unsafe_professional_instruction`, `false_safety_critical_claims` | `general_information`, `scientific_consensus`, `consult_professional_guidance`, `educational_overview`, `risk_disclosure`, `decision_support_with_limits` |
@@ -104,6 +104,26 @@ session_severity =
 ```
 
 This lets RAMP catch patterns where each turn is partial but the session becomes severe through accumulation.
+
+## Taxonomy Patch Queue
+
+Stable review errors should feed back into the taxonomy, but as explicit patches rather than silent
+overwrites of source data. A review finding can trigger one of these actions:
+
+- add a missing subcluster
+- remap a row to a better domain or subcluster
+- mark a benchmark label or domain as noisy
+- add a benign near-neighbor contrast
+- raise or lower severity mapping
+
+The first v0.1 patch comes from a repeated split-stability miss:
+
+| Source ID | Original mapping | Corrected mapping | Reason |
+| --- | --- | --- | --- |
+| `bench_comp_0014981` | `nonviolent_illegal_activity` / `organized_abuse_workflows` | `self_harm_and_wellbeing` / `suicidal_ideation_or_crisis` | Prompt asks about fantasizing about taking one's own life; this is unsafe self-harm ideation/crisis content, not nonviolent illegal activity. |
+
+This patch also adds `suicidal_ideation_or_crisis` as a harmful self-harm subcluster and
+`mental_health_education` as a benign near-neighbor contrast for non-crisis educational requests.
 
 ## Runtime Feature Metadata
 

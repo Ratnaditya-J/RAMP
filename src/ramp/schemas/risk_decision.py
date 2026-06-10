@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 from ramp.schemas.feature_result import FeatureStage
 
@@ -41,4 +42,5 @@ class RiskDecision:
     disagreements: tuple[str, ...] = ()
     next_required_feature: FeatureStage | None = None
     feature_contributions: dict[FeatureStage, float] = field(default_factory=dict)
+    fusion_metadata: dict[str, Any] = field(default_factory=dict)
     reason: str = ""

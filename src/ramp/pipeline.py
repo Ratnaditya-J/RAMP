@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 from ramp.features.base import FeatureExtractor, FeatureInput
-from ramp.fusion import WeightedRiskFusion
+from ramp.fusion import CalibratedFusionConfig, WeightedRiskFusion
 from ramp.risk_state import RiskState
 from ramp.scheduler import AnytimeScheduler
 from ramp.schemas.feature_result import FeatureStage
@@ -67,25 +68,55 @@ def prompt_risk_feature_from_backend(backend: str = "keyword") -> FeatureExtract
     raise ValueError(f"unknown prompt risk backend: {backend}")
 
 
-def default_pipeline(prompt_risk_backend: str = "keyword") -> RampPipeline:
+def output_risk_feature_from_backend(backend: str = "keyword") -> FeatureExtractor:
+    from ramp.features import KeywordOutputRiskFeature, Qwen3GuardOutputRiskFeature
+
+    normalized = backend.strip().lower()
+    if normalized == "keyword":
+        return KeywordOutputRiskFeature()
+    if normalized in {"qwen", "qwen3guard"}:
+        return Qwen3GuardOutputRiskFeature.from_env()
+    raise ValueError(f"unknown output risk backend: {backend}")
+
+
+def default_pipeline(
+    prompt_risk_backend: str = "keyword",
+    *,
+    output_risk_backend: str = "keyword",
+    fusion_calibration_artifact: str | Path | None = None,
+    fusion_policy_artifact: str | Path | None = None,
+    fusion_calibration_objective: str = "selected_by_best_f1",
+) -> RampPipeline:
     from ramp.features import (
-        KeywordOutputRiskFeature,
+        CompactSessionRiskFeature,
         LexicalEmbeddingRiskFeature,
-        RollingSessionDriftFeature,
         SideEffectToolActionRiskFeature,
         StubActivationProbeFeature,
     )
+    if fusion_calibration_artifact is not None and fusion_policy_artifact is not None:
+        raise ValueError(
+            "provide only one of fusion_calibration_artifact or fusion_policy_artifact"
+        )
 
     feature_list = [
         prompt_risk_feature_from_backend(prompt_risk_backend),
         LexicalEmbeddingRiskFeature(),
-        RollingSessionDriftFeature(),
+        CompactSessionRiskFeature(),
         StubActivationProbeFeature(),
-        KeywordOutputRiskFeature(),
+        output_risk_feature_from_backend(output_risk_backend),
         SideEffectToolActionRiskFeature(),
     ]
+    fusion_artifact = fusion_policy_artifact or fusion_calibration_artifact
+    calibrated_config = (
+        CalibratedFusionConfig.from_artifact(
+            fusion_artifact,
+            objective=fusion_calibration_objective,
+        )
+        if fusion_artifact is not None
+        else None
+    )
     return RampPipeline(
         features={feature.stage: feature for feature in feature_list},
-        fusion=WeightedRiskFusion(),
+        fusion=WeightedRiskFusion(calibrated_config=calibrated_config),
         scheduler=AnytimeScheduler(),
     )

@@ -1,0 +1,50 @@
+{
+  "artifact_id": "ramp_session_source_manifest_v0.1",
+  "description": "Candidate existing multi-turn safety datasets for RAMP session-risk evaluation.",
+  "sources": [
+    {
+      "source_id": "mhj",
+      "name": "Multi-Turn Human Jailbreaks",
+      "dataset": "ScaleAI/mhj",
+      "url": "https://huggingface.co/datasets/ScaleAI/mhj",
+      "paper": "https://arxiv.org/abs/2408.15221",
+      "access": "huggingface_request_required",
+      "use_in_ramp": "Primary benchmark candidate for persistence, harm drift, and multi-turn jailbreak accumulation.",
+      "notes": "Reported as 2,912 prompts across 537 multi-turn jailbreaks."
+    },
+    {
+      "source_id": "safedialbench",
+      "name": "SafeDialBench",
+      "dataset": "drivetosouth/SafeDialBench-Dataset",
+      "url": "https://github.com/drivetosouth/SafeDialBench-Dataset",
+      "site": "https://safedialbench.github.io/",
+      "access": "github_dataset_repository",
+      "use_in_ramp": "Primary benchmark candidate for broad multi-turn dialogue safety scenarios and jailbreak strategies.",
+      "notes": "Use local downloaded JSON/JSONL if GitHub schema changes."
+    },
+    {
+      "source_id": "rjudge",
+      "name": "R-Judge",
+      "url": "https://rjudgebench.github.io/",
+      "access": "github_dataset_repository",
+      "use_in_ramp": "Agent/session risk-monitor benchmark candidate, especially useful before tool/action evidence.",
+      "notes": "Use local downloaded records because releases may not be exposed through Hugging Face datasets."
+    },
+    {
+      "source_id": "multibreak",
+      "name": "MultiBreak",
+      "paper": "https://arxiv.org/abs/2605.01687",
+      "access": "availability_to_verify",
+      "use_in_ramp": "Large-scale multi-turn adversarial benchmark candidate once public data access is confirmed.",
+      "notes": "Do not make v0 results depend on this until dataset access and license are verified."
+    },
+    {
+      "source_id": "synthetic_control_v0",
+      "name": "RAMP synthetic session controls",
+      "url": "local:data/session_corpus/ramp_session_eval_corpus_v0_1.jsonl",
+      "access": "local_project_generated",
+      "use_in_ramp": "Controlled mechanism checks for severity accumulation, harm drift, cross-turn composition, de-escalation, and missing-session sliding windows.",
+      "notes": "Synthetic controls are not a replacement for existing benchmarks."
+    }
+  ]
+}
