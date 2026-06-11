@@ -157,13 +157,15 @@ class WeightedRiskFusion:
         total_weight = 0.0
         contributions: dict[FeatureStage, float] = {}
         for feature in state.features:
-            weight = self.weights.get(feature.stage, 1.0) * max(feature.confidence, 0.05)
+            weight = self.weights.get(feature.stage, 1.0) * feature.confidence
+            if weight <= 0:
+                continue
             contribution = feature.risk_score * weight
             weighted_sum += contribution
             total_weight += weight
             contributions[feature.stage] = contribution
 
-        risk = weighted_sum / total_weight if total_weight else 0.0
+        risk = self._clamp_score(weighted_sum / total_weight) if total_weight else 0.0
         confidence = self._combined_confidence(state.features)
         disagreements = self._find_disagreements(state.features)
         action = self._recommend_action(state, risk, confidence)
@@ -229,8 +231,8 @@ class WeightedRiskFusion:
             contributions[FeatureStage.ACTIVATION_PROBE] = (
                 activation.risk_score * config.activation_weight
             )
-        risk = sum(contributions.values())
-        raw_calibrated_risk = risk
+        raw_calibrated_risk = sum(contributions.values())
+        risk = self._clamp_score(raw_calibrated_risk)
         confidence_numerator = sum(
             by_stage[stage].confidence * weight
             for stage, weight in (
@@ -259,7 +261,7 @@ class WeightedRiskFusion:
             severity_floor is not None and risk < severity_floor["floor"]
         )
         if severity_floor_applied:
-            risk = float(severity_floor["floor"])
+            risk = self._clamp_score(float(severity_floor["floor"]))
         disagreements = self._find_disagreements(state.features)
         risk_level = self._risk_level(risk)
         action = (
@@ -333,7 +335,7 @@ class WeightedRiskFusion:
         prompt: FeatureResult,
         config: CalibratedFusionConfig,
     ) -> dict[str, Any] | None:
-        if str(prompt.label or "").strip().lower() != "unsafe":
+        if str(prompt.label or "").strip().lower() in {"", "safe"}:
             return None
         categories = self._prompt_categories(prompt)
         matched = sorted(categories & config.high_severity_categories)
@@ -341,7 +343,7 @@ class WeightedRiskFusion:
             return None
         return {
             "floor": config.high_severity_floor,
-            "severity_floor_reason": "prompt_unsafe_high_severity_category",
+            "severity_floor_reason": "prompt_high_severity_category",
             "severity_floor_categories": matched,
         }
 
@@ -363,6 +365,10 @@ class WeightedRiskFusion:
         return sum(
             feature.confidence * self.weights.get(feature.stage, 1.0) for feature in features
         ) / total_weight
+
+    @staticmethod
+    def _clamp_score(value: float) -> float:
+        return min(1.0, max(0.0, value))
 
     def _find_disagreements(self, features: list[FeatureResult]) -> list[str]:
         disagreements: list[str] = []
