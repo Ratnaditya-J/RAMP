@@ -23,6 +23,8 @@ This repository starts with a small executable core:
 - an initial Qwen3Guard prompt-classifier batch run that exposes prompt-label audit needs
 - Qwen3Guard-backed output-risk classification for generated responses
 - a frozen input-side v0 fusion policy selected by reviewed-label split stability
+- a frozen multi-stage v0 policy that separates runtime, audit, and escalation signals
+- compact-state and full-transcript session classifier evaluation
 - an agent tool/action gate
 - examples for single-turn evaluation, private-output review, asynchronous audit, and tool-use flows
 - tests for early allow, early block, disagreement tracking, and tool gating
@@ -90,6 +92,16 @@ review batch can be generated with
 The current frozen input-side runtime policy is
 [`data/fusion_policy/ramp_fusion_policy_v0_1.json`](data/fusion_policy/ramp_fusion_policy_v0_1.json):
 prompt `0.25`, activation `0.75`, embedding `0.00`, threshold `0.53`.
+The current multi-stage v0 policy is
+[`data/fusion_policy/ramp_multistage_policy_v0_1.json`](data/fusion_policy/ramp_multistage_policy_v0_1.json):
+prompt and activation are the positive runtime score, embedding is retained for audit/taxonomy,
+output is retained for post-generation audit, and session scoring is retained for calibrated
+escalation rather than naive OR/max blocking.
+The consolidated v0 research report is
+[`docs/reports/ramp_v0_consolidated_research_report.md`](docs/reports/ramp_v0_consolidated_research_report.md).
+Reproduction commands are in
+[`docs/reproducibility-v0.md`](docs/reproducibility-v0.md), and the paper outline is in
+[`docs/paper-outline.md`](docs/paper-outline.md).
 See [`docs/activation-probe-feature.md`](docs/activation-probe-feature.md) for the current
 activation probe result and selected layer.
 See [`docs/prompt-risk-feature.md`](docs/prompt-risk-feature.md) for the current Qwen3Guard

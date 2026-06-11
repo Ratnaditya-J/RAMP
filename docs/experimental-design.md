@@ -43,9 +43,9 @@ confidence, label, metadata, and provenance.
 | Prompt classifier | Front-door semantic and policy classifier | Qwen3Guard v0.6B implemented and audited | How much does a prompt classifier contribute after reviewed-label calibration? |
 | Input embedding proximity | Early internal semantic prior | GPT-OSS input-embedding centroids built | Does embedding proximity reduce prompt-classifier false positives on hard benign neighbors? |
 | Activation probe | Internal model-state signal | GPT-OSS layer 19 linear probe selected | Do activations add useful signal beyond prompt text? |
-| Output classifier | Post-generation safety check | Not yet built | Does response-level evidence catch failures missed pre-generation? |
-| Session signal | Cross-turn accumulation | Spec-level only | Does risk drift or multi-prompt composition improve detection? |
-| Tool/action gate | Agent action safety | Scaffolded | Do proposed actions expose risk not visible in text alone? |
+| Output classifier | Post-generation safety check | Qwen3Guard output scoring built and evaluated | Does response-level evidence catch failures missed pre-generation? |
+| Session signal | Cross-turn accumulation | Compact and full-transcript classifiers built and evaluated | Does risk drift or multi-prompt composition improve detection? |
+| Tool/action gate | Agent action safety | Runtime scaffolded, benchmark validation pending | Do proposed actions expose risk not visible in text alone? |
 
 ## Evaluation Conditions
 
@@ -82,8 +82,8 @@ RAMP needs multiple datasets because one dataset cannot answer every question.
 | Human-reviewed disagreement set | Clean prompt-level evaluation for classifier/fusion decisions | Started, 99 reviewed rows, 67 binary |
 | Hard benign near-neighbor set | Borderline benign examples close to harmful clusters | Partially represented by benchmarks |
 | Severe harm set | Stress test for severe false negatives | Needs explicit construction |
-| Output-risk set | Prompt/response pairs for output classifier evaluation | Not yet built |
-| Session-risk set | Multi-turn risk accumulation, drift, and composition | Not yet built |
+| Output-risk set | Prompt/response pairs for output classifier evaluation | Built, 134 generated response rows |
+| Session-risk set | Multi-turn risk accumulation, drift, and composition | Built for R-Judge, MHJ, and SafeDialBench mining |
 | Tool/action set | Proposed actions, arguments, and permission context | Scaffolded, needs benchmark data |
 
 ## Metrics
@@ -143,15 +143,19 @@ Current v0 findings:
   disagreement slice.
 - Embeddings are weak as a standalone classifier but can add useful context.
 - Activation probes, especially GPT-OSS layer 19, are the strongest internal-model signal so far.
+- The frozen v0 runtime core is prompt `0.25` plus activation `0.75`, threshold `0.53`.
 - Calibrated fusion is better justified than fixed hand-picked weights.
-- Repeated split evaluation shows the current fusion lowers false positives and hard-benign false
-  positives, but it also increases false negatives and severe false negatives relative to prompt
-  only.
+- Repeated split evaluation shows prompt+activation has the strongest current runtime tradeoff.
+- Embedding does not earn positive v0 runtime weight, but remains useful for taxonomy and audit.
+- Output scoring is implemented, but output-inclusive fusion did not improve the best v0 input-side
+  result.
+- Full-transcript session scoring shows real session signal, but compact state is too lossy and
+  naive OR/max session fusion raises false positives.
 - Severity floors are useful as a runtime safety constraint, but the current reviewed slice shows
   score-severity adjustment rather than threshold-level classification improvement.
 
-The evidence supports continuing RAMP as a cumulative classifier study. It does not yet support a
-final paper claim.
+The evidence supports calling RAMP feature-complete as a research v0. It does not yet support a
+paper-final or production-grade claim.
 
 ## Build Roadmap
 
