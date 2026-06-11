@@ -222,3 +222,34 @@ MHJ, it improves over the old accumulator (`0.4234` recall versus `0.0766` at th
 it still does not beat single-turn max. The next decisive test is to score the compact session
 evidence with Qwen3Guard or another session classifier and compare it with the full-transcript oracle
 baseline.
+
+## Session Classifier v2 Result
+
+The Qwen3Guard session-classifier comparison shows that real session-level signal exists, but the
+current compact representation is too lossy to replace transcript-aware scoring.
+
+R-Judge result at threshold `0.55`:
+
+| Condition | AUC | Recall | FPR | Single-turn FNs caught |
+| --- | ---: | ---: | ---: | ---: |
+| `single_turn_max` | 0.5471 | 0.7413 | 0.7695 | 0 |
+| `compact_session_classifier` | 0.5299 | 0.1154 | 0.0558 | 1 |
+| `full_transcript_session_classifier` | 0.6105 | 0.5839 | 0.3680 | 14 |
+| `max_session_signal` | 0.5570 | 0.7937 | 0.8104 | 15 |
+
+MHJ is unsafe-only, so it cannot measure AUC or FPR. It remains useful as an unsafe-recall stress
+set:
+
+| Condition | Recall | Single-turn FNs caught |
+| --- | ---: | ---: |
+| `single_turn_max` | 0.7984 | 0 |
+| `compact_session_classifier` | 0.4133 | 4 |
+| `full_transcript_session_classifier` | 0.6956 | 24 |
+| `max_session_signal` | 0.8508 | 26 |
+
+Interpretation: full-transcript session classification catches unsafe sessions that single-turn
+scoring misses, which supports keeping session risk as a real RAMP signal. However, naive OR/max
+fusion raises R-Judge false positives, and compact evidence currently recovers only a small fraction
+of the full-transcript signal. For v0, session scoring should be treated as an escalation/audit
+signal or calibrated second-stage signal. Compact state remains valuable as an optimization target,
+but it is not yet the evidence-preserving runtime representation.
