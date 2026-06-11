@@ -1,0 +1,97 @@
+{
+  "activation_policy": {
+    "reason": "Activation improves over the non-crossfit collapse but does not beat prompt+embedding on the selected F1/accuracy/recall/FPR tradeoff; full fusion only marginally improves AUROC while reducing recall/F1.",
+    "runtime_weight_v0_2": 0.0,
+    "status": "audit_research_signal"
+  },
+  "artifact_id": "ramp_fusion_policy_v0.2",
+  "created_from": {
+    "activation_rows": ".artifacts/corrections/ramp_benchmark_comprehensive_v0.layer_19.taxonomy_corrected_v0_1.jsonl",
+    "crossfit_leakage_free_calibration_report": ".artifacts/prompt_label_audit/ramp_leakage_free_activation_fusion_crossfit_v0_1.json",
+    "external_output_keyword_report": ".artifacts/external_baselines/ramp_external_output_baselines_keyword_v0_1.json",
+    "external_prompt_baseline_report": ".artifacts/external_baselines/ramp_external_prompt_baselines_corrected_v0_1.json",
+    "feature_table": ".artifacts/cumulative_signal_eval/ramp_qwen3guard_prompt_internal_signal_feature_table_expanded_reviewed_activation_v0_1.jsonl",
+    "review_csv": "data/reviewed/ramp_prompt_label_review_combined_v0_1_v0_2_v0_4_cleaned.csv"
+  },
+  "decision": "prompt_embedding_runtime_policy_pending_blind_holdout",
+  "embedding_policy": {
+    "reason": "Prompt+embedding improved AUROC, F1, accuracy, and FPR over prompt-only in cross-fit leakage-free reviewed split stability, with a small recall tradeoff.",
+    "runtime_weight_v0_2": 0.2,
+    "status": "positive_runtime_signal_pending_blind_holdout"
+  },
+  "limitations": [
+    "Reviewed rows are still adaptively selected hard cases, not a fixed deployment-distribution test set.",
+    "The selected threshold is the modal split-selected threshold, not a final deployment threshold.",
+    "External baseline results rely on benchmark-native label mappings and should be expanded to additional public guardrail benchmarks and stronger guard models.",
+    "Activation should be revisited on a blind holdout and with larger reviewed training data before assigning positive runtime weight."
+  ],
+  "rationale": "The cross-fit leakage-free protocol retrains activation probes inside each split and uses out-of-fold activation predictions for calibration weight selection. Under that protocol, activation has some signal but does not improve the selected runtime tradeoff over prompt+embedding. Prompt+embedding has the best mean F1/accuracy and lower FPR than prompt-only, with a small recall tradeoff. The full prompt+embedding+activation condition has marginally higher AUROC, but lower recall/F1 and unstable activation weight selection, so activation remains an audit/research signal pending a blind holdout.",
+  "reviewed_split_stability": {
+    "binary_reviewed_rows": 448,
+    "num_splits": 30,
+    "prompt_activation_calibrated": {
+      "accuracy_mean": 0.9248511904761905,
+      "auc_mean": 0.9608878887070377,
+      "auc_stdev": 0.013733603852804435,
+      "f1_mean": 0.9365067477428549,
+      "false_negative_count_mean": 5.6,
+      "false_positive_count_mean": 11.233333333333333,
+      "false_positive_rate_mean": 0.11950354609929079,
+      "hard_benign_false_positive_count_mean": 5.933333333333334,
+      "recall_mean": 0.956923076923077,
+      "severe_false_negative_count_mean": 3.933333333333333
+    },
+    "prompt_embedding_activation_calibrated": {
+      "accuracy_mean": 0.9257440476190477,
+      "auc_mean": 0.9640643753409711,
+      "auc_stdev": 0.012211657106789685,
+      "f1_mean": 0.9367411453818338,
+      "false_negative_count_mean": 6.5,
+      "false_positive_count_mean": 10.133333333333333,
+      "false_positive_rate_mean": 0.1078014184397163,
+      "hard_benign_false_positive_count_mean": 5.833333333333333,
+      "recall_mean": 0.95,
+      "severe_false_negative_count_mean": 4.9
+    },
+    "prompt_embedding_calibrated": {
+      "accuracy_mean": 0.9316964285714285,
+      "auc_mean": 0.9627141298417894,
+      "auc_stdev": 0.01046948248352554,
+      "f1_mean": 0.9422939333098608,
+      "false_negative_count_mean": 5.1,
+      "false_positive_count_mean": 10.2,
+      "false_positive_rate_mean": 0.10851063829787234,
+      "hard_benign_false_positive_count_mean": 5.866666666666666,
+      "most_common_threshold": 0.5,
+      "most_common_weights": {
+        "embedding_prior_score": 0.2,
+        "prompt_risk_score": 0.8
+      },
+      "recall_mean": 0.9607692307692307,
+      "severe_false_negative_count_mean": 3.6333333333333333
+    },
+    "prompt_only_calibrated": {
+      "accuracy_mean": 0.9266369047619047,
+      "auc_mean": 0.9457515002727769,
+      "auc_stdev": 0.013126519025753864,
+      "f1_mean": 0.9381987461799377,
+      "false_negative_count_mean": 4.8,
+      "false_positive_count_mean": 11.633333333333333,
+      "false_positive_rate_mean": 0.12375886524822695,
+      "hard_benign_false_positive_count_mean": 6.033333333333333,
+      "recall_mean": 0.963076923076923,
+      "severe_false_negative_count_mean": 3.2333333333333334
+    },
+    "protocol": "Each split trains a fresh activation probe on calibration rows only. Calibration activation_probability values are out-of-fold predictions inside the calibration split, and holdout values are out-of-split predictions from a probe trained on the full calibration split."
+  },
+  "selected_runtime_score": {
+    "method": "weighted_sum",
+    "threshold": 0.5,
+    "weights": {
+      "activation_probability": 0.0,
+      "embedding_prior_score": 0.2,
+      "prompt_risk_score": 0.8
+    }
+  },
+  "supersedes": "ramp_fusion_policy_v0.1"
+}

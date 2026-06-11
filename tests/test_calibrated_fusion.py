@@ -170,9 +170,54 @@ def test_calibrated_fusion_applies_high_severity_prompt_floor(tmp_path: Path) ->
     assert decision.fusion_metadata["raw_calibrated_score"] == pytest.approx(0.485)
     assert decision.fusion_metadata["severity_floor_applied"] is True
     assert decision.fusion_metadata["severity_floor_reason"] == (
-        "prompt_unsafe_high_severity_category"
+        "prompt_high_severity_category"
     )
     assert decision.fusion_metadata["severity_floor_categories"] == ["pii"]
+
+
+def test_calibrated_fusion_applies_severity_floor_to_controversial_prompt(
+    tmp_path: Path,
+) -> None:
+    artifact = tmp_path / "calibration.json"
+    write_calibration_artifact(artifact)
+    fusion = WeightedRiskFusion(
+        calibrated_config=CalibratedFusionConfig.from_artifact(artifact)
+    )
+    state = make_state()
+    state.add_feature(
+        FeatureResult(
+            stage=FeatureStage.PROMPT_RISK,
+            risk_score=0.45,
+            confidence=0.80,
+            label="Controversial",
+            harm_category="Suicide & Self-Harm",
+            metadata={"categories": ["Suicide & Self-Harm"]},
+        )
+    )
+    state.add_feature(
+        FeatureResult(
+            stage=FeatureStage.EMBEDDING_RISK,
+            risk_score=0.05,
+            confidence=0.80,
+            label="semantic_low",
+        )
+    )
+    state.add_feature(
+        FeatureResult(
+            stage=FeatureStage.ACTIVATION_PROBE,
+            risk_score=0.05,
+            confidence=0.80,
+            label="activation_probe_safe",
+        )
+    )
+
+    decision = fusion.update(state)
+
+    assert decision.current_risk == pytest.approx(0.72)
+    assert decision.fusion_metadata["severity_floor_applied"] is True
+    assert decision.fusion_metadata["severity_floor_categories"] == [
+        "suicide & self-harm"
+    ]
 
 
 def test_calibrated_fusion_does_not_floor_non_high_severity_prompt(
@@ -216,6 +261,70 @@ def test_calibrated_fusion_does_not_floor_non_high_severity_prompt(
     assert decision.current_risk == pytest.approx(0.485)
     assert decision.recommended_action == RecommendedAction.ESCALATE
     assert decision.fusion_metadata["severity_floor_applied"] is False
+
+
+def test_weighted_fusion_ignores_zero_confidence_features() -> None:
+    fusion = WeightedRiskFusion()
+    state = make_state()
+    state.add_feature(
+        FeatureResult(
+            stage=FeatureStage.PROMPT_RISK,
+            risk_score=1.0,
+            confidence=0.0,
+            label="Unsafe",
+        )
+    )
+
+    decision = fusion.update(state)
+
+    assert decision.current_risk == pytest.approx(0.0)
+    assert decision.feature_contributions == {}
+
+
+def test_calibrated_fusion_clamps_policy_scores(tmp_path: Path) -> None:
+    artifact = tmp_path / "policy.json"
+    artifact.write_text(
+        json.dumps(
+            {
+                "artifact_id": "ramp_fusion_policy_clamp_test",
+                "decision": "clamp_test",
+                "selected_runtime_score": {
+                    "method": "weighted_sum",
+                    "threshold": 0.9,
+                    "weights": {
+                        "prompt_risk_score": 1.0,
+                        "activation_probability": 1.0,
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    fusion = WeightedRiskFusion(
+        calibrated_config=CalibratedFusionConfig.from_artifact(artifact)
+    )
+    state = make_state()
+    state.add_feature(
+        FeatureResult(
+            stage=FeatureStage.PROMPT_RISK,
+            risk_score=0.9,
+            confidence=0.9,
+            label="Unsafe",
+        )
+    )
+    state.add_feature(
+        FeatureResult(
+            stage=FeatureStage.ACTIVATION_PROBE,
+            risk_score=0.9,
+            confidence=0.9,
+            label="activation_probe_unsafe",
+        )
+    )
+
+    decision = fusion.update(state)
+
+    assert decision.current_risk == pytest.approx(1.0)
+    assert decision.fusion_metadata["raw_calibrated_score"] == pytest.approx(1.8)
 
 
 def test_frozen_policy_uses_prompt_activation_and_ignores_embedding(
