@@ -60,7 +60,7 @@ Primary ablations:
 | Activation only | Internal-signal standalone upper/lower bound |
 | Prompt + embedding | Tests whether embedding helps on prompt-classifier false positives |
 | Prompt + activation | Tests whether activation helps on hard prompt cases |
-| Prompt + embedding + activation | Current internal-signal RAMP core |
+| Prompt + embedding + activation | Full pre-generation fusion candidate |
 | Prompt + embedding + activation + output | Adds post-generation evidence |
 | Full RAMP | Adds session and tool/action evidence |
 
@@ -142,11 +142,13 @@ Current v0 findings:
 - Qwen3Guard looked weak against noisy benchmark-derived labels but strong on the first reviewed
   disagreement slice.
 - Embeddings are weak as a standalone classifier but can add useful context.
-- Activation probes, especially GPT-OSS layer 19, are the strongest internal-model signal so far.
-- The frozen v0 runtime core is prompt `0.25` plus activation `0.75`, threshold `0.53`.
+- Activation probes, especially GPT-OSS layer 19, remain useful internal-model research signals,
+  but the earlier activation-heavy policy was invalidated by leakage-free cross-fitting.
+- The frozen v0.2 input-side runtime core is prompt `0.80` plus embedding `0.20`, threshold `0.50`.
 - Calibrated fusion is better justified than fixed hand-picked weights.
-- Repeated split evaluation shows prompt+activation has the strongest current runtime tradeoff.
-- Embedding does not earn positive v0 runtime weight, but remains useful for taxonomy and audit.
+- Cross-fitted repeated split evaluation shows prompt+embedding has the strongest current selected
+  runtime tradeoff.
+- Embedding earns positive v0.2 runtime weight on the reviewed hard-case set, pending blind holdout.
 - Output scoring is implemented, but output-inclusive fusion did not improve the best v0 input-side
   result.
 - Full-transcript session scoring shows real session signal, but compact state is too lossy and
@@ -556,8 +558,8 @@ helpful:
 | Prompt + activation calibrated | 0.9493 | 0.9218 | 0.9463 | 0.1028 | 6.07 | 3.17 | 2.60 | 3.90 |
 | Prompt + embedding + activation calibrated | 0.9464 | 0.9234 | 0.9514 | 0.1045 | 6.17 | 2.87 | 2.30 | 4.17 |
 
-After training the layer-19 activation probe on the 235 manually reviewed rows, activation becomes
-the strongest reviewed-label internal signal:
+Before the leakage review, training the layer-19 activation probe on the 235 manually reviewed rows
+made activation appear to be the strongest reviewed-label internal signal:
 
 | Condition | AUC mean | Accuracy mean | Recall mean | FPR mean | FP mean | FN mean | Severe FN mean | Hard benign FP mean |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -566,13 +568,11 @@ the strongest reviewed-label internal signal:
 | Prompt + activation calibrated | 0.9982 | 0.9788 | 0.9797 | 0.0220 | 1.30 | 1.20 | 1.00 | 1.23 |
 | Prompt + embedding + activation calibrated | 0.9978 | 0.9695 | 0.9774 | 0.0384 | 2.27 | 1.33 | 1.30 | 2.03 |
 
-The current interpretation is that the earlier twist was mostly probe-label misalignment, not a
-failure of activation evidence. Embeddings still carry taxonomy-aware boundary information, but on
-the reviewed set the best current combination is prompt plus reviewed activation. The full
-three-stage prompt plus embedding plus activation classifier is close, but currently adds some false
-positives compared with prompt plus activation alone. RAMP should keep embedding as a cumulative
-signal, but final paper claims should report combination-specific calibration rather than a single
-hand-chosen weight vector.
+That interpretation is now historical. The later leakage-free rerun showed that this activation
+headline depended on in-sample activation probabilities for calibration rows. It remains useful as a
+diagnostic for why activation looked promising, but it is not the current policy evidence.
+Embeddings still carry taxonomy-aware boundary information, and final paper claims should report
+combination-specific leakage-free calibration rather than a single hand-chosen weight vector.
 
 The next reviewed-label expansion is intentionally narrow. Review batch v0.4 samples 221 unreviewed
 rows focused on activation false-negative candidates, severe activation false-negative candidates,
@@ -589,11 +589,22 @@ but it is still trained on only 235 binary reviewed rows. This is the current ru
 activation weight must be earned by reviewed-label calibration, not assigned because later-layer
 signals are theoretically appealing.
 
-After the v0.4 review expansion, the reviewed set increased to 448 binary rows. The expanded
-reviewed activation probe became more conservative on holdout because v0.4 intentionally targeted
-activation misses and embedding conflicts. The decisive split-stability run still selected
-prompt+activation as the best v0 runtime policy: AUC `0.9939`, FPR `0.0397`, and mean FP count
-`3.73`. Full prompt+embedding+activation tied AUC but had higher FPR (`0.0450`) and more hard-benign
-false positives. Therefore the frozen v0 runtime policy is prompt `0.25`, activation `0.75`,
-embedding `0.00`, threshold `0.53`, with embedding retained as a taxonomy/audit signal until it
-earns positive runtime weight on future reviewed-label split stability.
+After the v0.4 review expansion, the reviewed set increased to 448 binary rows. A subsequent
+leakage review found that the activation-heavy result was not a valid final policy claim: the
+calibration rows had been scored by activation probes trained on the same reviewed rows. The
+leakage-free rerun retrains activation probes inside each split, uses out-of-fold activation
+predictions for calibration rows, and uses out-of-split predictions for holdout rows.
+
+Under that cross-fitted protocol, the earlier prompt+activation headline is superseded:
+
+| Condition | AUC mean | F1 mean | Recall mean | FPR mean | FP mean | FN mean |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Prompt only calibrated | 0.9458 | 0.9382 | 0.9631 | 0.1238 | 11.63 | 4.80 |
+| Prompt + embedding calibrated | 0.9627 | 0.9423 | 0.9608 | 0.1085 | 10.20 | 5.10 |
+| Prompt + activation calibrated | 0.9609 | 0.9365 | 0.9569 | 0.1195 | 11.23 | 5.60 |
+| Prompt + embedding + activation calibrated | 0.9641 | 0.9367 | 0.9500 | 0.1078 | 10.13 | 6.50 |
+
+The frozen v0.2 input-side runtime policy is therefore prompt `0.80`, embedding `0.20`,
+activation `0.00`, threshold `0.50`. Full prompt+embedding+activation has marginally higher AUROC,
+but lower recall and F1, so activation remains an audit/research signal until it proves value on a
+blind holdout.

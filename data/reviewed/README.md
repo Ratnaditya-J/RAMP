@@ -27,3 +27,23 @@ population is no longer dependent on local spreadsheet state.
 Only binary `safe` and `unsafe` reviewed labels are used for AUROC/FPR/recall
 calibration. Non-binary reviewed labels remain in the CSVs for provenance and
 future taxonomy analysis.
+
+## Sampling Provenance
+
+These CSVs are targeted review artifacts, not a random deployment-distribution
+test set.
+
+- `v0_1` started from Qwen3Guard prompt-label audit candidates where benchmark
+  labels, prompt-classifier scores, or source metadata suggested likely prompt
+  label noise.
+- `v0_2` expanded the reviewed set with additional disagreement and uncertain
+  rows from the prompt-label audit workflow, then received mechanical CSV
+  cleanup before use.
+- `v0_4` was intentionally adaptive: it focused on activation false-negative
+  candidates, severe activation false-negative candidates, embedding false
+  positives, and embedding/activation conflict candidates found during split
+  stability analysis.
+- The combined file is the union of those reviewed batches after mechanical
+  cleanup. It is appropriate for hard-case calibration and error analysis, but
+  any paper or deployment claim must describe it as adaptively sampled and
+  should validate the selected policy on a future blind holdout.

@@ -22,7 +22,8 @@ This repository starts with a small executable core:
 - cumulative internal-signal evaluation for embedding priors plus activation evidence
 - an initial Qwen3Guard prompt-classifier batch run that exposes prompt-label audit needs
 - Qwen3Guard-backed output-risk classification for generated responses
-- a frozen input-side v0 fusion policy selected by reviewed-label split stability
+- a frozen input-side v0.2 fusion policy selected by cross-fitted, leakage-free
+  reviewed-label split stability
 - a frozen multi-stage v0 policy that separates runtime, audit, and escalation signals
 - compact-state and full-transcript session classifier evaluation
 - an agent tool/action gate
@@ -90,13 +91,16 @@ Repeated split-calibrated stability evaluation is implemented in
 review batch can be generated with
 [`scripts/build_review_batch_v0_3.py`](scripts/build_review_batch_v0_3.py).
 The current frozen input-side runtime policy is
-[`data/fusion_policy/ramp_fusion_policy_v0_1.json`](data/fusion_policy/ramp_fusion_policy_v0_1.json):
-prompt `0.25`, activation `0.75`, embedding `0.00`, threshold `0.53`.
+[`data/fusion_policy/ramp_fusion_policy_v0_2.json`](data/fusion_policy/ramp_fusion_policy_v0_2.json):
+prompt `0.80`, embedding `0.20`, activation `0.00`, threshold `0.50`.
+This supersedes the earlier v0.1 prompt+activation policy after a cross-fitted,
+leakage-free reviewed-label evaluation showed that activation did not improve the
+selected runtime tradeoff once probes were retrained inside each split.
 The current multi-stage v0 policy is
 [`data/fusion_policy/ramp_multistage_policy_v0_1.json`](data/fusion_policy/ramp_multistage_policy_v0_1.json):
-prompt and activation are the positive runtime score, embedding is retained for audit/taxonomy,
-output is retained for post-generation audit, and session scoring is retained for calibrated
-escalation rather than naive OR/max blocking.
+prompt and embedding are the positive input-side runtime score, activation is retained for
+audit/research, output is retained for post-generation audit, and session scoring is retained
+for calibrated escalation rather than naive OR/max blocking.
 The consolidated v0 research report is
 [`docs/reports/ramp_v0_consolidated_research_report.md`](docs/reports/ramp_v0_consolidated_research_report.md).
 Reproduction commands are in

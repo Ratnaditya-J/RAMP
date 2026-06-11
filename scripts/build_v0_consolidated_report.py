@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_POLICY = "data/fusion_policy/ramp_multistage_policy_v0_1.json"
-DEFAULT_INPUT_POLICY = "data/fusion_policy/ramp_fusion_policy_v0_1.json"
+DEFAULT_INPUT_POLICY = "data/fusion_policy/ramp_fusion_policy_v0_2.json"
 DEFAULT_OUTPUT_CALIBRATION = (
     ".artifacts/output_eval/"
     "ramp_prompt_embedding_activation_output_calibration_refined_v0_1.json"
@@ -85,6 +85,10 @@ def build_summary(args: argparse.Namespace) -> dict[str, Any]:
         "input_side_policy": {
             "decision": input_policy.get("decision"),
             "selected_runtime_score": input_policy.get("selected_runtime_score"),
+            "protocol": reviewed.get("protocol"),
+            "limitations": input_policy.get("limitations", []),
+            "prompt_only": reviewed.get("prompt_only_calibrated"),
+            "prompt_embedding": reviewed.get("prompt_embedding_calibrated"),
             "prompt_activation": reviewed.get("prompt_activation_calibrated"),
             "prompt_embedding_activation": reviewed.get(
                 "prompt_embedding_activation_calibrated"
@@ -141,6 +145,8 @@ def write_markdown(path: Path, summary: dict[str, Any]) -> None:
     input_policy = summary["input_side_policy"]
     selected = input_policy.get("selected_runtime_score") or {}
     weights = selected.get("weights") or {}
+    po = input_policy.get("prompt_only") or {}
+    pe = input_policy.get("prompt_embedding") or {}
     pa = input_policy.get("prompt_activation") or {}
     pea = input_policy.get("prompt_embedding_activation") or {}
 
@@ -153,14 +159,17 @@ def write_markdown(path: Path, summary: dict[str, Any]) -> None:
         "# RAMP v0 Consolidated Research Report",
         "",
         "RAMP v0 is feature-complete as a research multi-stage classifier. The current evidence",
-        "supports a prompt-plus-activation primary runtime policy, with embedding, output, and",
-        "session signals retained as audit, taxonomy, post-generation, or escalation signals until",
-        "larger reviewed datasets justify positive runtime weight.",
+        "now supersedes the earlier prompt-plus-activation headline: under cross-fitted,",
+        "leakage-free reviewed-label calibration, the selected runtime policy is prompt plus",
+        "input-embedding proximity. Activation, output, and session signals remain implemented",
+        "audit, research, post-generation, or escalation evidence until larger blind holdouts",
+        "justify positive runtime weight.",
         "",
-        "## Frozen v0 Policy",
+        "## Frozen v0.2 Input-Side Policy",
         "",
-        f"- Policy artifact: `{policy.get('artifact_id', 'N/A')}`",
-        f"- Decision: `{policy.get('decision', 'N/A')}`",
+        f"- Policy artifact: `ramp_fusion_policy_v0.2`",
+        f"- Supersedes: `ramp_fusion_policy_v0.1`",
+        f"- Decision: `{input_policy.get('decision', 'N/A')}`",
         f"- Runtime threshold: `{selected.get('threshold', 'N/A')}`",
         f"- Prompt weight: `{weights.get('prompt_risk_score', 'N/A')}`",
         f"- Activation weight: `{weights.get('activation_probability', 'N/A')}`",
@@ -173,6 +182,24 @@ def write_markdown(path: Path, summary: dict[str, Any]) -> None:
         "",
         "| Condition | AUC mean | Recall mean | FPR mean | FP mean | FN mean |",
         "| --- | ---: | ---: | ---: | ---: | ---: |",
+        (
+            "| `prompt_only_calibrated` | {} | {} | {} | {} | {} |"
+        ).format(
+            fmt(po.get("auc_mean")),
+            fmt(po.get("recall_mean")),
+            fmt(po.get("false_positive_rate_mean")),
+            fmt(po.get("false_positive_count_mean")),
+            fmt(po.get("false_negative_count_mean")),
+        ),
+        (
+            "| `prompt_embedding_calibrated` | {} | {} | {} | {} | {} |"
+        ).format(
+            fmt(pe.get("auc_mean")),
+            fmt(pe.get("recall_mean")),
+            fmt(pe.get("false_positive_rate_mean")),
+            fmt(pe.get("false_positive_count_mean")),
+            fmt(pe.get("false_negative_count_mean")),
+        ),
         (
             "| `prompt_activation_calibrated` | {} | {} | {} | {} | {} |"
         ).format(
@@ -192,8 +219,11 @@ def write_markdown(path: Path, summary: dict[str, Any]) -> None:
             fmt(pea.get("false_negative_count_mean")),
         ),
         "",
-        "Decision: full prompt+embedding+activation does not beat prompt+activation for the",
-        "frozen v0 runtime policy. Embedding remains a useful taxonomy and audit signal.",
+        "Decision: prompt+embedding is the selected v0.2 runtime policy because it improves",
+        "AUROC, F1, accuracy, and FPR over prompt-only under the cross-fitted leakage-free",
+        "protocol, with a small recall tradeoff. Full prompt+embedding+activation has marginally",
+        "higher AUROC but lower recall/F1, so activation remains an audit/research signal pending",
+        "blind-holdout validation.",
         "",
         "## Output Classifier",
         "",
@@ -276,7 +306,10 @@ def write_markdown(path: Path, summary: dict[str, Any]) -> None:
             "",
             "## Negative And Limited Results",
             "",
-            "- Input embeddings are not a standalone decision feature in v0.",
+            (
+                "- Input embeddings are not a standalone decision feature, but prompt+embedding "
+                "is the selected v0.2 input-side runtime policy pending blind holdout."
+            ),
             "- Output classification does not improve the best input-side v0 fusion yet.",
             "- Compact session evidence does not recover enough full-transcript signal yet.",
             "- Naive OR/max fusion improves unsafe recall but increases false positives.",
