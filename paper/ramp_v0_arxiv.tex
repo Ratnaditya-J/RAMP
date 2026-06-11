@@ -157,6 +157,14 @@ prompt classifier marks a high-severity unsafe category, the final risk can be r
 configured minimum. The floor is a policy guardrail around calibrated fusion, not another learned
 weight.
 
+The threshold is not hand tuned. In each of 30 deterministic stratified reviewed-label splits, we
+calibrate candidate weights and thresholds on the calibration half by grid search, using 0.05
+weight steps and 0.01 threshold steps. The selection objective orders candidates by F1, accuracy,
+recall, false-positive rate, and AUROC on the calibration split. The reported weights and threshold
+are the modal prompt+activation configuration across splits: threshold 0.53 was selected in 6 of 30
+splits, and the prompt 0.25 / activation 0.75 weight pair was selected in 7 of 30 splits. We treat
+this as a stability-selected research operating point, not as a universal deployment cutoff.
+
 The multi-stage policy artifact also defines non-primary roles. Output scoring is a post-generation
 audit signal. Session scoring is a calibrated escalation/audit signal. Tool/action gating is a
 deterministic reference gate pending benchmark validation.
