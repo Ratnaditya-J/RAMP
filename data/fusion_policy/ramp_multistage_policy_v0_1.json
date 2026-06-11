@@ -1,0 +1,68 @@
+{
+  "artifact_id": "ramp_multistage_policy_v0.1",
+  "status": "research_v0_feature_complete_policy",
+  "decision": "prompt_activation_primary_with_audit_and_escalation_signals",
+  "primary_runtime_score": {
+    "policy_artifact": "data/fusion_policy/ramp_fusion_policy_v0_1.json",
+    "method": "weighted_sum",
+    "threshold": 0.53,
+    "weights": {
+      "prompt_risk_score": 0.25,
+      "activation_probability": 0.75,
+      "embedding_prior_score": 0.0
+    },
+    "severity_floor": {
+      "status": "enabled_runtime_guardrail",
+      "floor_score": 0.72,
+      "scope": "Qwen3Guard Unsafe findings in high-severity prompt categories",
+      "role": "policy floor around calibrated fusion, not a learned weight"
+    }
+  },
+  "stage_disposition": {
+    "prompt_classifier": {
+      "runtime_role_v0": "positive_primary_signal",
+      "evidence_status": "reviewed_label_calibrated",
+      "notes": "Prompt classification remains the front-door semantic and policy signal."
+    },
+    "input_embedding_proximity": {
+      "runtime_role_v0": "audit_taxonomy_signal",
+      "runtime_weight_v0": 0.0,
+      "evidence_status": "useful_for_boundary_analysis_but_not_runtime_weight",
+      "notes": "Embedding proximity separates broad harmful/benign neighborhoods but did not improve the frozen reviewed-label runtime policy over prompt+activation."
+    },
+    "activation_probe": {
+      "runtime_role_v0": "positive_primary_signal_when_available",
+      "evidence_status": "strongest_internal_signal",
+      "selected_layer": "gpt-oss-20b layer 19",
+      "notes": "Layer 19 activation probability earned high runtime weight through reviewed-label split stability."
+    },
+    "output_classifier": {
+      "runtime_role_v0": "post_generation_audit_signal",
+      "runtime_weight_v0": 0.0,
+      "evidence_status": "implemented_but_no_positive_weight_in_v0",
+      "notes": "Output scoring did not improve the best input-side fusion on the v0 prompt/response set, but remains useful for compliance checks and response-level audits."
+    },
+    "session_classifier": {
+      "runtime_role_v0": "calibrated_escalation_or_audit_signal",
+      "runtime_weight_v0": 0.0,
+      "evidence_status": "full_transcript_signal_exists_compact_not_ready",
+      "notes": "Full-transcript session scoring catches single-turn misses, but naive max/OR fusion raises false positives. Compact evidence is currently too lossy."
+    },
+    "tool_action_gate": {
+      "runtime_role_v0": "deterministic_gate_scaffold",
+      "runtime_weight_v0": null,
+      "evidence_status": "implemented_as_reference_pattern_not_benchmark_validated",
+      "notes": "Tool/action gating is included as part of the multi-stage design but still needs a dedicated evaluation set."
+    }
+  },
+  "paper_position": {
+    "claim_supported": "RAMP is feature-complete as a research v0 multi-stage classifier, with reviewed-label evidence that prompt+activation is the strongest current runtime core and with measured negative/limited results for embedding, output, and compact session signals.",
+    "claim_not_supported": "RAMP should not claim that every stage deserves positive runtime weight, that compact session state is ready, or that the current v0 policy is production-grade.",
+    "next_required_for_paper_final": [
+      "Expand reviewed prompt labels beyond targeted hard cases.",
+      "Create a labeled prompt/response output set large enough for held-out response-level analysis.",
+      "Review SafeDialBench or another labeled session benchmark for session FPR/AUC.",
+      "Add a dedicated tool/action evaluation set."
+    ]
+  }
+}
