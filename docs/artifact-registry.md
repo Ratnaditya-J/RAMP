@@ -298,6 +298,45 @@ The compact inputs are substantially smaller than full transcript inputs in the 
 sets up the next experiment: score compact session evidence and full transcript evidence with the
 same classifier, then measure how much of the full-transcript signal compact state recovers.
 
+### Session Classifier v2 Score Comparison
+
+| Field | Value |
+| --- | --- |
+| R-Judge compact scores | `.artifacts/session_eval/ramp_session_classifier_scores_rjudge_compact_state_qwen_v0_1.jsonl` |
+| R-Judge full-transcript scores | `.artifacts/session_eval/ramp_session_classifier_scores_rjudge_full_transcript_qwen_v0_1.jsonl` |
+| MHJ compact scores | `.artifacts/session_eval/ramp_session_classifier_scores_mhj_compact_state_qwen_v0_1.jsonl` |
+| MHJ full-transcript scores | `.artifacts/session_eval/ramp_session_classifier_scores_mhj_full_transcript_qwen_v0_1.jsonl` |
+| SafeDialBench compact scores | `.artifacts/session_eval/ramp_session_classifier_scores_safedialbench_compact_state_qwen_v0_1.jsonl` |
+| Session fusion evaluator | `scripts/evaluate_session_signal_fusion.py` |
+| R-Judge fusion report | `.artifacts/session_eval/ramp_session_signal_fusion_eval_rjudge_qwen_v0_1.json` |
+| R-Judge fusion summary | `.artifacts/session_eval/ramp_session_signal_fusion_eval_rjudge_qwen_v0_1.md` |
+| MHJ fusion report | `.artifacts/session_eval/ramp_session_signal_fusion_eval_mhj_qwen_v0_1.json` |
+| MHJ fusion summary | `.artifacts/session_eval/ramp_session_signal_fusion_eval_mhj_qwen_v0_1.md` |
+
+R-Judge session-level comparison at threshold `0.55`:
+
+| Condition | AUC | Recall | FPR | Single-turn FNs caught |
+| --- | ---: | ---: | ---: | ---: |
+| `single_turn_max` | 0.5471 | 0.7413 | 0.7695 | 0 |
+| `compact_session_classifier` | 0.5299 | 0.1154 | 0.0558 | 1 |
+| `full_transcript_session_classifier` | 0.6105 | 0.5839 | 0.3680 | 14 |
+| `max_session_signal` | 0.5570 | 0.7937 | 0.8104 | 15 |
+
+MHJ unsafe-recall stress comparison at threshold `0.55`:
+
+| Condition | Recall | Single-turn FNs caught |
+| --- | ---: | ---: |
+| `single_turn_max` | 0.7984 | 0 |
+| `compact_session_classifier` | 0.4133 | 4 |
+| `full_transcript_session_classifier` | 0.6956 | 24 |
+| `max_session_signal` | 0.8508 | 26 |
+
+Interpretation: full-transcript session classification provides measurable session-level signal,
+but compact session state is not yet a sufficient substitute. The v0 policy should not use naive
+max/OR blocking because it raises R-Judge false positives. The defensible path is to keep session
+classification as a calibrated escalation/audit signal while improving compact evidence
+compression.
+
 ## Prompt-Label Audit v0.1
 
 | Field | Value |
