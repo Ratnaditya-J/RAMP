@@ -1,18 +1,21 @@
 # RAMP v0 Consolidated Research Report
 
 RAMP v0 is feature-complete as a research multi-stage classifier. The current evidence
-supports a prompt-plus-activation primary runtime policy, with embedding, output, and
-session signals retained as audit, taxonomy, post-generation, or escalation signals until
-larger reviewed datasets justify positive runtime weight.
+now supersedes the earlier prompt-plus-activation headline: under cross-fitted,
+leakage-free reviewed-label calibration, the selected runtime policy is prompt plus
+input-embedding proximity. Activation, output, and session signals remain implemented
+audit, research, post-generation, or escalation evidence until larger blind holdouts
+justify positive runtime weight.
 
-## Frozen v0 Policy
+## Frozen v0.2 Input-Side Policy
 
-- Policy artifact: `ramp_multistage_policy_v0.1`
-- Decision: `prompt_activation_primary_with_audit_and_escalation_signals`
-- Runtime threshold: `0.53`
-- Prompt weight: `0.25`
-- Activation weight: `0.75`
-- Embedding runtime weight: `0.0`
+- Policy artifact: `ramp_fusion_policy_v0.2`
+- Supersedes: `ramp_fusion_policy_v0.1`
+- Decision: `prompt_embedding_runtime_policy_pending_blind_holdout`
+- Runtime threshold: `0.5`
+- Prompt weight: `0.8`
+- Activation weight: `0.0`
+- Embedding runtime weight: `0.2`
 - Output classifier: post-generation audit, no positive v0 runtime weight
 - Session classifier: calibrated escalation/audit signal, no naive OR/max blocking
 - Tool/action gate: reference deterministic gate, benchmark evaluation still pending
@@ -21,11 +24,16 @@ larger reviewed datasets justify positive runtime weight.
 
 | Condition | AUC mean | Recall mean | FPR mean | FP mean | FN mean |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `prompt_activation_calibrated` | 0.9939 | 0.9626 | 0.0397 | 3.7333 | 4.8667 |
-| `prompt_embedding_activation_calibrated` | 0.9939 | 0.9633 | 0.0450 | 4.2333 | 4.7667 |
+| `prompt_only_calibrated` | 0.9458 | 0.9631 | 0.1238 | 11.6333 | 4.8000 |
+| `prompt_embedding_calibrated` | 0.9627 | 0.9608 | 0.1085 | 10.2000 | 5.1000 |
+| `prompt_activation_calibrated` | 0.9609 | 0.9569 | 0.1195 | 11.2333 | 5.6000 |
+| `prompt_embedding_activation_calibrated` | 0.9641 | 0.9500 | 0.1078 | 10.1333 | 6.5000 |
 
-Decision: full prompt+embedding+activation does not beat prompt+activation for the
-frozen v0 runtime policy. Embedding remains a useful taxonomy and audit signal.
+Decision: prompt+embedding is the selected v0.2 runtime policy because it improves
+AUROC, F1, accuracy, and FPR over prompt-only under the cross-fitted leakage-free
+protocol, with a small recall tradeoff. Full prompt+embedding+activation has marginally
+higher AUROC but lower recall/F1, so activation remains an audit/research signal pending
+blind-holdout validation.
 
 ## Output Classifier
 
@@ -64,7 +72,7 @@ classification as escalation/audit in v0.
 
 ## Negative And Limited Results
 
-- Input embeddings are not a standalone decision feature in v0.
+- Input embeddings are not a standalone decision feature, but prompt+embedding is the selected v0.2 input-side runtime policy pending blind holdout.
 - Output classification does not improve the best input-side v0 fusion yet.
 - Compact session evidence does not recover enough full-transcript signal yet.
 - Naive OR/max fusion improves unsafe recall but increases false positives.

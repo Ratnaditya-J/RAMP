@@ -36,14 +36,15 @@ the user prompt, model-internal representations, generated output, multi-turn se
 proposed tool actions. We present RAMP, a reference implementation and research design for a
 multi-stage safety classifier that accumulates such evidence into a versioned risk state. The
 current RAMP reference implementation implements prompt classification, GPT-OSS input-embedding
-proximity, GPT-OSS activation probes,
-generated-output classification, session classification, and tool/action gating. On the current
-human-reviewed prompt set, deterministic split-stability calibration selects prompt+activation as
-the primary runtime policy: prompt weight 0.25, activation weight 0.75, input-embedding weight 0.00,
-and threshold 0.53. This policy reaches mean AUROC 0.9939, mean recall 0.9626, and mean false
-positive rate 0.0397 across 30 deterministic reviewed-label splits. Input embeddings, output
-classification, and full-transcript session scoring are useful as taxonomy, audit, post-generation,
-or escalation evidence, but they do not yet justify positive runtime blocking weight. The main
+proximity, GPT-OSS activation probes, generated-output classification, session classification, and
+tool/action gating. On the current 448-row human-reviewed hard-case prompt set, cross-fitted,
+leakage-free split-stability calibration selects prompt+embedding as the primary input-side runtime
+policy: prompt weight 0.80, input-embedding weight 0.20, activation weight 0.00, and threshold 0.50.
+This policy reaches mean AUROC 0.9627, mean recall 0.9608, and mean false-positive rate 0.1085
+across 30 deterministic reviewed-label splits, compared with prompt-only AUROC 0.9458 and false
+positive rate 0.1238. Activation, output classification, and full-transcript session scoring are
+useful as research, audit, post-generation, or escalation evidence, but they do not yet justify
+positive runtime blocking weight under the leakage-free protocol. The main
 finding is therefore not that every signal improves runtime blocking, but that a staged reference design can
 make signal value, negative results, and provenance explicit enough for reproducible safety research.
 \end{abstract}
@@ -67,10 +68,10 @@ available evidence and records which signals were decisive, missing, ignored, or
 
 This paper reports the current research result. The RAMP reference implementation is
 feature-complete, but not production-grade or paper-final. Its strongest current evidence supports a
-prompt+activation runtime core. Other stages are implemented and measured, but currently serve
-audit, taxonomy, post-generation, or escalation roles. We include these limited and negative results
-because they are central to the contribution: RAMP provides a disciplined way to test whether signals
-earn runtime weight instead of assuming every added stage should improve decisions.
+prompt+embedding input-side runtime core. Activation, output, and session scoring currently serve
+audit, research, or escalation roles. We include these limited and negative results because they are
+central to the contribution: RAMP provides a disciplined way to test whether signals earn runtime
+weight instead of assuming every added stage should improve decisions.
 
 The contributions are:
 \begin{itemize}[leftmargin=*]
@@ -78,8 +79,8 @@ The contributions are:
 activation, output, session, and tool/action evidence.
 \item A GPT-OSS-based internal-signal path that distinguishes input embeddings from hidden-state
 activations and evaluates them separately.
-\item A reviewed-label calibration protocol that freezes weights by split-stability rather than
-manual preference.
+\item A reviewed-label calibration protocol that freezes weights by cross-fitted split-stability
+rather than manual preference or in-sample probe performance.
 \item A consolidated evidence package showing which signals currently earn runtime weight and
 which remain audit/escalation signals.
 \end{itemize}
@@ -126,9 +127,9 @@ Figure~\ref{fig:pipeline} summarizes the RAMP pipeline.
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.84\textwidth]{ramp_pipeline.png}
-\caption{RAMP accumulates staged evidence. The frozen runtime core uses prompt and activation
-scores. Embedding, output, and session signals are retained as audit/escalation evidence until
-larger reviewed datasets justify positive runtime weight.}
+\caption{RAMP accumulates staged evidence. The current frozen input-side runtime core uses prompt
+and embedding scores. Activation, output, and session signals are retained as audit/escalation
+evidence until leakage-free blind holdouts justify positive runtime weight.}
 \label{fig:pipeline}
 \end{figure}
 
@@ -150,20 +151,21 @@ deterministic reference gate.
 Let $s_p$ be the prompt risk score, $s_a$ the activation probability, and $s_e$ the embedding prior.
 The frozen input-side runtime score is
 \begin{equation}
-  s_{\mathrm{RAMP}} = 0.25 s_p + 0.75 s_a + 0.00 s_e.
+  s_{\mathrm{RAMP}} = 0.80 s_p + 0.20 s_e + 0.00 s_a.
 \end{equation}
-The selected operating threshold is 0.53. This score is wrapped by severity-aware floors: if the
+The selected operating threshold is 0.50. This score is wrapped by severity-aware floors: if the
 prompt classifier marks a high-severity unsafe category, the final risk can be raised to a
 configured minimum. The floor is a policy guardrail around calibrated fusion, not another learned
 weight.
 
 The threshold is not hand tuned. In each of 30 deterministic stratified reviewed-label splits, we
 calibrate candidate weights and thresholds on the calibration half by grid search, using 0.05
-weight steps and 0.01 threshold steps. The selection objective orders candidates by F1, accuracy,
-recall, false-positive rate, and AUROC on the calibration split. The reported weights and threshold
-are the modal prompt+activation configuration across splits: threshold 0.53 was selected in 6 of 30
-splits, and the prompt 0.25 / activation 0.75 weight pair was selected in 7 of 30 splits. We treat
-this as a stability-selected research operating point, not as a universal deployment cutoff.
+weight steps and 0.01 threshold steps. Activation probes are retrained inside each split: calibration
+rows receive out-of-fold activation predictions, and holdout rows receive predictions from a probe
+trained only on that split's calibration rows. The selection objective orders candidates by F1,
+accuracy, recall, false-positive rate, and AUROC on the calibration split. The reported weights and
+threshold are the most common selected prompt+embedding configuration across splits. We treat this
+as a stability-selected research operating point, not as a universal deployment cutoff.
 
 The multi-stage policy artifact also defines non-primary roles. Output scoring is a post-generation
 audit signal. Session scoring is a calibrated escalation/audit signal. Tool/action gating is a
@@ -180,10 +182,11 @@ Signal & Final construction & Current role & Selection evidence \\
 Prompt classifier & Qwen3Guard prompt-risk score & Positive runtime signal & Reviewed labels
 showed useful ranking after noisy benchmark labels were separated. \\
 Embedding proximity & GPT-OSS input embeddings against harmful and benign centroids &
-Taxonomy/audit signal, runtime weight 0 & Useful semantic boundary signal, but no lift over
-prompt+activation. \\
-Activation probe & Linear probe over GPT-OSS layer-19 hidden states & Positive runtime signal &
-Layer comparison and reviewed calibration made this the strongest internal signal. \\
+Positive runtime signal, pending blind holdout & Improves AUROC, F1, accuracy, and FPR over
+prompt-only under cross-fitted reviewed split stability. \\
+Activation probe & Linear probe over GPT-OSS layer-19 hidden states & Audit/research signal,
+runtime weight 0 & In-sample activation results were optimistic; leakage-free cross-fitting did
+not improve the selected runtime tradeoff over prompt+embedding. \\
 Output classifier & Qwen3Guard score over generated response & Post-generation audit signal &
 Output-inclusive fusion did not improve the best input-side result. \\
 Session classifier & Compact evidence and full transcript evidence & Escalation/audit signal &
@@ -244,31 +247,37 @@ The embedding signal uses GPT-OSS input embeddings, not a separate embedding mod
 token IDs are mapped through the target model's input-embedding table, mean-pooled over the prompt,
 and normalized. We then compare the resulting vector with harmful centroids and benign
 near-neighbor centroids. Several variants were evaluated, including raw cosine, centered cosine,
-and domain-conditioned benign contrast. The final interpretation is conservative: embeddings
-separate broad semantic neighborhoods and are useful for taxonomy review, but their overlap with
-hard benign near-neighbors prevents them from earning positive runtime weight in the current policy.
+and domain-conditioned benign contrast. The final interpretation is conservative: embeddings are
+not a standalone safety decision feature, but they separate broad semantic neighborhoods well enough
+to improve the reviewed prompt-only tradeoff and earn a modest positive input-side runtime weight in
+the current policy.
 
 \subsection{Activation Probe}
 
 The activation signal uses GPT-OSS hidden states. We extracted mid-layer, late-layer, and final
 hidden-state representations and trained linear probes. The initial layer comparison selected layer
-19 under a low-FPR rule. We then retrained and recalibrated against the expanded reviewed-label set,
-including hard cases where activations previously failed. Layer-19 activation probability remained
-the strongest internal signal and earned the largest runtime weight in the frozen policy.
+19 under a low-FPR rule, but later review exposed an evaluation hazard: if activation probabilities
+used for fusion are generated by a probe that saw the same reviewed rows during training, calibration
+can overstate activation value. We therefore reran the input-side experiment with split-local probes
+and out-of-fold activation predictions on calibration rows. Under this leakage-free protocol,
+activation remains an implemented research signal, but it does not earn positive runtime weight in
+the current frozen policy.
 
 \subsection{Input-Side Fusion}
 
 The input-side fusion experiment combines the three pre-generation signals: prompt classifier,
 embedding proximity, and activation probe. We compare prompt-only, prompt+embedding,
 prompt+activation, and prompt+embedding+activation on human-reviewed labels. We select weights by
-deterministic split stability rather than hand tuning. The decisive comparison for the frozen policy
-is prompt+activation versus prompt+embedding+activation.
+deterministic, cross-fitted split stability rather than hand tuning. The decisive comparison for the
+frozen policy is prompt-only versus prompt+embedding, with activation tested as an additional
+candidate signal.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{input_side_split_stability.png}
-\caption{Input-side reviewed split stability. Adding embedding to prompt+activation ties AUROC but
-increases mean false-positive rate, so embedding is assigned zero runtime weight in the current policy.}
+\caption{Input-side reviewed split stability under the leakage-free protocol. Prompt+embedding
+improves AUROC and false-positive rate over prompt-only. Full fusion has marginally higher AUROC but
+lower recall/F1, so activation remains an audit/research signal in the current policy.}
 \label{fig:inputside}
 \end{figure}
 
@@ -278,11 +287,15 @@ increases mean false-positive rate, so embedding is assigned zero runtime weight
 \toprule
 Condition & AUROC & Recall & FPR & FP & FN \\
 \midrule
-Prompt+activation & 0.9939 & 0.9626 & 0.0397 & 3.73 & 4.87 \\
-Prompt+embedding+activation & 0.9939 & 0.9633 & 0.0450 & 4.23 & 4.77 \\
+Prompt only & 0.9458 & 0.9631 & 0.1238 & 11.63 & 4.80 \\
+Prompt+embedding & 0.9627 & 0.9608 & 0.1085 & 10.20 & 5.10 \\
+Prompt+activation & 0.9609 & 0.9569 & 0.1195 & 11.23 & 5.60 \\
+Prompt+embedding+activation & 0.9641 & 0.9500 & 0.1078 & 10.13 & 6.50 \\
 \bottomrule
 \end{tabular}
-\caption{Input-side split-stability means over 30 deterministic reviewed-label splits.}
+\caption{Input-side split-stability means over 30 deterministic reviewed-label splits. Activation
+scores are leakage-free: calibration predictions are out-of-fold and holdout predictions are
+out-of-split.}
 \label{tab:inputside}
 \end{table}
 
@@ -387,13 +400,13 @@ claim.
 \section{Discussion}
 
 \paragraph{What earns runtime weight?}
-The reviewed-label evidence supports prompt+activation as the runtime core. Activation receives
-high weight not because later-layer signals are assumed superior, but because it repeatedly earned
-that role under reviewed-label calibration.
+The reviewed-label evidence supports prompt+embedding as the current input-side runtime core.
+Embedding receives positive weight not because semantic proximity is assumed superior, but because
+it improves the selected cross-fitted reviewed-label tradeoff over prompt-only.
 
 \paragraph{What does not earn runtime weight yet?}
-Embedding proximity is useful for taxonomy review and semantic boundary analysis, but it did not
-improve the frozen runtime tradeoff. Output scoring is useful for post-generation audit and
+Activation is useful for representation research, but the leakage-free reviewed-label protocol did
+not justify positive runtime weight. Output scoring is useful for post-generation audit and
 compliance measurement, but the current response set does not justify positive weight. Full
 transcript session scoring catches missed unsafe sessions, but naive OR/max fusion is
 false-positive heavy. Compact session evidence is too lossy in its current form.
@@ -430,9 +443,10 @@ The paper source, generated figures, and report artifacts are versioned in the p
 \section{Conclusion}
 
 RAMP is a feature-complete research reference implementation for multi-stage safety
-classification. Its current paper-grade lesson is careful and bounded: prompt+activation is the
-best-supported runtime core; embedding, output, and session signals add audit or escalation value
-but require stronger reviewed evidence before they become positive blocking weights. This result
+classification. Its current paper-grade lesson is careful and bounded: prompt+embedding is the
+best-supported input-side runtime core; activation, output, and session signals add audit, research,
+or escalation value but require stronger blind-holdout evidence before they become positive blocking
+weights. This result
 supports RAMP as a useful framework for studying cumulative safety evidence, while preserving clear
 limitations around data scale, calibration, and deployment readiness.
 

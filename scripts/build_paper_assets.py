@@ -109,9 +109,9 @@ def build_pipeline() -> None:
     small = font(18)
 
     stages = [
-        ("Prompt", "runtime\nw=0.25"),
-        ("Embedding", "audit\nw=0"),
-        ("Activation", "runtime\nw=0.75"),
+        ("Prompt", "runtime\nw=0.80"),
+        ("Embedding", "runtime\nw=0.20"),
+        ("Activation", "audit\nw=0"),
         ("Output", "post-gen\naudit"),
         ("Session", "escalate\naudit"),
         ("Tool/action", "gate\nscaffold"),
@@ -139,9 +139,9 @@ def build_pipeline() -> None:
     )
     centered(draw, ((policy_x1 + policy_x2) // 2, policy_y1 + 36), "current policy", title)
     policy = (
-        "Primary score: 0.25 prompt + 0.75 activation, threshold 0.53. "
-        "Other implemented signals remain audit/escalation evidence until reviewed data "
-        "justifies positive runtime weight."
+        "Primary score: 0.80 prompt + 0.20 embedding, threshold 0.50. "
+        "Activation, output, and session signals remain audit/escalation evidence "
+        "until leakage-free blind holdouts justify positive runtime weight."
     )
     for line_idx, line in enumerate(wrap(draw, policy, small, policy_x2 - policy_x1 - 80)):
         centered(
@@ -154,9 +154,9 @@ def build_pipeline() -> None:
 
     bus_y = 410
     prompt_x = centers[0][0]
-    activation_x = centers[2][0]
+    embedding_x = centers[1][0]
     policy_mid_x = (policy_x1 + policy_x2) // 2
-    for source_x in (prompt_x, activation_x):
+    for source_x in (prompt_x, embedding_x):
         draw.line((source_x, y0 + box_h, source_x, bus_y), fill=INK, width=2)
     draw.line((prompt_x, bus_y, policy_mid_x, bus_y), fill=INK, width=2)
     draw.line((policy_mid_x, bus_y, policy_mid_x, policy_y1), fill=INK, width=2)
@@ -221,23 +221,29 @@ def draw_grouped_bar_chart(
 
 
 def build_charts() -> None:
-    policy = load_json("data/fusion_policy/ramp_fusion_policy_v0_1.json")
+    policy = load_json("data/fusion_policy/ramp_fusion_policy_v0_2.json")
     split = policy["reviewed_split_stability"]
-    pa = split["prompt_activation_calibrated"]
+    po = split["prompt_only_calibrated"]
+    pe = split["prompt_embedding_calibrated"]
     pea = split["prompt_embedding_activation_calibrated"]
     draw_grouped_bar_chart(
         "input_side_split_stability.png",
         ["AUROC", "Recall", "FPR"],
         [
             (
-                "prompt + activation",
-                [pa["auc_mean"], pa["recall_mean"], pa["false_positive_rate_mean"]],
+                "prompt only",
+                [po["auc_mean"], po["recall_mean"], po["false_positive_rate_mean"]],
                 SERIES_A,
+            ),
+            (
+                "prompt + embedding",
+                [pe["auc_mean"], pe["recall_mean"], pe["false_positive_rate_mean"]],
+                SERIES_B,
             ),
             (
                 "prompt + embedding + activation",
                 [pea["auc_mean"], pea["recall_mean"], pea["false_positive_rate_mean"]],
-                SERIES_B,
+                SERIES_C,
             ),
         ],
         "Mean metric value",
