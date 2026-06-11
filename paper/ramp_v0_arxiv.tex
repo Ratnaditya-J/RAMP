@@ -5,6 +5,8 @@
 \usepackage{times}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{placeins}
+\usepackage{array}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{enumitem}
@@ -21,7 +23,7 @@ RAMP Reference Implementation\\
 \texttt{https://github.com/Ratnaditya-J/RAMP}
 }
 
-\date{Research v0 draft, repository commit \texttt{ff1336c}}
+\date{Research draft}
 
 \begin{document}
 \maketitle
@@ -31,16 +33,17 @@ Safety classification for large language model (LLM) and agent systems is common
 single prompt- or response-level decision. Real deployments, however, expose staged evidence:
 the user prompt, model-internal representations, generated output, multi-turn session history, and
 proposed tool actions. We present RAMP, a reference implementation and research design for a
-multi-stage safety classifier that accumulates such evidence into a versioned risk state. RAMP v0
-implements prompt classification, GPT-OSS input-embedding proximity, GPT-OSS activation probes,
+multi-stage safety classifier that accumulates such evidence into a versioned risk state. The
+current RAMP reference implementation implements prompt classification, GPT-OSS input-embedding
+proximity, GPT-OSS activation probes,
 generated-output classification, session classification, and tool/action gating. On the current
 human-reviewed prompt set, deterministic split-stability calibration selects prompt+activation as
 the primary runtime policy: prompt weight 0.25, activation weight 0.75, input-embedding weight 0.00,
 and threshold 0.53. This policy reaches mean AUROC 0.9939, mean recall 0.9626, and mean false
 positive rate 0.0397 across 30 deterministic reviewed-label splits. Input embeddings, output
 classification, and full-transcript session scoring are useful as taxonomy, audit, post-generation,
-or escalation evidence, but they do not yet justify positive v0 blocking weight. The main finding is
-therefore not that every signal improves runtime blocking, but that a staged reference design can
+or escalation evidence, but they do not yet justify positive runtime blocking weight. The main
+finding is therefore not that every signal improves runtime blocking, but that a staged reference design can
 make signal value, negative results, and provenance explicit enough for reproducible safety research.
 \end{abstract}
 
@@ -61,8 +64,8 @@ treats those classifiers as one stage in a broader evidence pipeline. Each stage
 score, label, confidence, metadata, and provenance record. A fusion policy then combines the
 available evidence and records which signals were decisive, missing, ignored, or reserved for audit.
 
-This paper reports the current research-v0 result. RAMP v0 is feature-complete as a reference
-implementation, but not production-grade or paper-final. Its strongest current evidence supports a
+This paper reports the current research result. The RAMP reference implementation is
+feature-complete, but not production-grade or paper-final. Its strongest current evidence supports a
 prompt+activation runtime core. Other stages are implemented and measured, but currently serve
 audit, taxonomy, post-generation, or escalation roles. We include these limited and negative results
 because they are central to the contribution: RAMP provides a disciplined way to test whether signals
@@ -76,7 +79,7 @@ activation, output, session, and tool/action evidence.
 activations and evaluates them separately.
 \item A reviewed-label calibration protocol that freezes weights by split-stability rather than
 manual preference.
-\item A consolidated v0 evidence package showing which signals currently earn runtime weight and
+\item A consolidated evidence package showing which signals currently earn runtime weight and
 which remain audit/escalation signals.
 \end{itemize}
 
@@ -102,7 +105,7 @@ homogeneous benchmark.
 \paragraph{Internal representations and open-weight targets.}
 RAMP separates input embeddings from activations. Input embeddings are the token-embedding vectors
 produced before transformer-layer computation; activations are hidden states from later layers. For
-research-v0 extraction, both are taken from the open-weight GPT-OSS path \citep{gptoss2025}, which
+current extraction, both are taken from the open-weight GPT-OSS path \citep{gptoss2025}, which
 keeps the representation source tied to an instrumentable target model.
 
 \paragraph{Policy and constitutional classifiers.}
@@ -115,7 +118,7 @@ stage-level provenance.
 
 \subsection{Staged Evidence}
 
-Figure~\ref{fig:pipeline} summarizes the RAMP v0 pipeline. The stages are:
+Figure~\ref{fig:pipeline} summarizes the RAMP pipeline. The stages are:
 \begin{enumerate}[leftmargin=*]
 \item \textbf{Prompt classifier}: Qwen3Guard scores the incoming prompt.
 \item \textbf{Input-embedding proximity}: GPT-OSS input embeddings are compared with harmful and
@@ -131,7 +134,7 @@ deterministic reference gate.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{ramp_pipeline.png}
-\caption{RAMP v0 accumulates staged evidence. The frozen runtime core uses prompt and activation
+\caption{RAMP accumulates staged evidence. The frozen runtime core uses prompt and activation
 scores. Embedding, output, and session signals are retained as audit/escalation evidence until
 larger reviewed datasets justify positive runtime weight.}
 \label{fig:pipeline}
@@ -140,9 +143,9 @@ larger reviewed datasets justify positive runtime weight.}
 \subsection{Fusion Policy}
 
 Let $s_p$ be the prompt risk score, $s_a$ the activation probability, and $s_e$ the embedding prior.
-The frozen input-side v0 runtime score is
+The frozen input-side runtime score is
 \begin{equation}
-  s_{\mathrm{v0}} = 0.25 s_p + 0.75 s_a + 0.00 s_e.
+  s_{\mathrm{RAMP}} = 0.25 s_p + 0.75 s_a + 0.00 s_e.
 \end{equation}
 The selected operating threshold is 0.53. This score is wrapped by severity-aware floors: if the
 prompt classifier marks a high-severity unsafe category, the final risk can be raised to a
@@ -153,9 +156,38 @@ The multi-stage policy artifact also defines non-primary roles. Output scoring i
 audit signal. Session scoring is a calibrated escalation/audit signal. Tool/action gating is a
 deterministic reference gate pending benchmark validation.
 
+\begin{table*}[!htbp]
+\centering
+\small
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\begin{tabular}{L{0.17\textwidth}L{0.27\textwidth}L{0.20\textwidth}L{0.24\textwidth}}
+\toprule
+Signal & Final construction & Current role & Selection evidence \\
+\midrule
+Prompt classifier & Qwen3Guard prompt-risk score & Positive runtime signal & Reviewed labels
+showed useful ranking after noisy benchmark labels were separated. \\
+Embedding proximity & GPT-OSS input embeddings against harmful and benign centroids &
+Taxonomy/audit signal, runtime weight 0 & Useful semantic boundary signal, but no lift over
+prompt+activation. \\
+Activation probe & Linear probe over GPT-OSS layer-19 hidden states & Positive runtime signal &
+Layer comparison and reviewed calibration made this the strongest internal signal. \\
+Output classifier & Qwen3Guard score over generated response & Post-generation audit signal &
+Output-inclusive fusion did not improve the best input-side result. \\
+Session classifier & Compact evidence and full transcript evidence & Escalation/audit signal &
+Full transcript catches misses; compact state is lossy and max fusion raises FPR. \\
+Tool/action gate & Deterministic check over proposed tool arguments & Reference gate & Implemented
+pattern; dedicated benchmark still pending. \\
+\bottomrule
+\end{tabular}
+\caption{Signal construction and disposition in the current RAMP reference implementation. This
+table separates implementation status from runtime weight: a signal can be implemented and useful
+without earning positive blocking weight.}
+\label{tab:signals}
+\end{table*}
+
 \section{Data and Artifacts}
 
-Table~\ref{tab:data} lists the major datasets and artifacts used in v0. Large generated artifacts
+Table~\ref{tab:data} lists the major datasets and artifacts used in the current study. Large generated artifacts
 are intentionally not committed to Git; the repository records their paths, summaries, and
 provenance in the artifact registry.
 
@@ -173,29 +205,61 @@ MHJ & unsafe-only multi-turn jailbreak stress test & 496 sessions \\
 SafeDialBench & session mining and future review & 4,053 sessions \\
 \bottomrule
 \end{tabular}
-\caption{RAMP v0 data sources. The corpora are used for different experimental questions and are not
+\caption{RAMP data sources. The corpora are used for different experimental questions and are not
 treated as a single merged benchmark.}
 \label{tab:data}
 \end{table*}
 
 \section{Experiments}
 
+The experiments are organized by signal family and by the decision each signal must earn. We do not
+assume that an implemented signal should automatically receive positive runtime weight. Instead, a
+signal is assigned one of three roles: primary runtime evidence, audit/taxonomy evidence, or
+escalation/post-generation evidence.
+
+\subsection{Prompt Classifier}
+
+The prompt classifier is the front-door signal. We use Qwen3Guard as the open safety classifier
+rather than training a new text classifier from scratch. Early benchmark-derived labels made the
+prompt classifier look weak because span-derived labels were not clean prompt-level moderation
+truth. We therefore built human-reviewed disagreement batches and used those reviewed rows for
+calibration. After this correction, prompt risk became the stable base signal in the fusion policy.
+
+\subsection{Input-Embedding Proximity}
+
+The embedding signal uses GPT-OSS input embeddings, not a separate embedding model. For each span,
+token IDs are mapped through the target model's input-embedding table, mean-pooled over the prompt,
+and normalized. We then compare the resulting vector with harmful centroids and benign
+near-neighbor centroids. Several variants were evaluated, including raw cosine, centered cosine,
+and domain-conditioned benign contrast. The final interpretation is conservative: embeddings
+separate broad semantic neighborhoods and are useful for taxonomy review, but their overlap with
+hard benign near-neighbors prevents them from earning positive runtime weight in the current policy.
+
+\subsection{Activation Probe}
+
+The activation signal uses GPT-OSS hidden states. We extracted mid-layer, late-layer, and final
+hidden-state representations and trained linear probes. The initial layer comparison selected layer
+19 under a low-FPR rule. We then retrained and recalibrated against the expanded reviewed-label set,
+including hard cases where activations previously failed. Layer-19 activation probability remained
+the strongest internal signal and earned the largest runtime weight in the frozen policy.
+
 \subsection{Input-Side Fusion}
 
-The input-side experiment compares prompt-only, embedding-only, activation-only, and fused
-conditions on human-reviewed labels. We select weights by deterministic split stability rather than
-hand tuning. The decisive comparison for the frozen policy is prompt+activation versus
-prompt+embedding+activation.
+The input-side fusion experiment combines the three pre-generation signals: prompt classifier,
+embedding proximity, and activation probe. We compare prompt-only, prompt+embedding,
+prompt+activation, and prompt+embedding+activation on human-reviewed labels. We select weights by
+deterministic split stability rather than hand tuning. The decisive comparison for the frozen policy
+is prompt+activation versus prompt+embedding+activation.
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{input_side_split_stability.png}
 \caption{Input-side reviewed split stability. Adding embedding to prompt+activation ties AUROC but
-increases mean false-positive rate, so embedding is assigned zero runtime weight in v0.}
+increases mean false-positive rate, so embedding is assigned zero runtime weight in the current policy.}
 \label{fig:inputside}
 \end{figure}
 
-\begin{table}[t]
+\begin{table}[!htbp]
 \centering
 \begin{tabular}{lrrrrr}
 \toprule
@@ -211,19 +275,24 @@ Prompt+embedding+activation & 0.9939 & 0.9633 & 0.0450 & 4.23 & 4.77 \\
 
 \subsection{Output Classifier}
 
-The output experiment scores generated responses and evaluates whether output risk improves the
-input-side fusion. Table~\ref{tab:output} and Figure~\ref{fig:output} show that output-inclusive
-fusion does not improve the strongest v0 input-side result on the current response set.
+The output classifier tests whether generated text adds evidence that prompt-side features miss. We
+built a 134-row prompt/response set from reviewed prompt examples, generated responses separately,
+then scored the generated response text with the same Qwen3Guard interface. This intentionally
+keeps prompt risk and output risk separate: the output classifier is evaluated on model behavior,
+not on the original prompt text. Table~\ref{tab:output} and Figure~\ref{fig:output} show that
+output-inclusive fusion does not improve the strongest input-side result on the current response
+set. We therefore retain output scoring as post-generation audit and compliance evidence, not as a
+positive runtime blocking weight.
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{output_ablation.png}
 \caption{Output-classifier ablation. Output scoring is implemented and useful for audit, but the
-current prompt/response set does not justify positive v0 runtime fusion weight.}
+current prompt/response set does not justify positive runtime fusion weight.}
 \label{fig:output}
 \end{figure}
 
-\begin{table}[t]
+\begin{table}[!htbp]
 \centering
 \begin{tabular}{lrrr}
 \toprule
@@ -240,19 +309,24 @@ Prompt+embedding+activation+output & 0.9851 & 0.9429 & 0.0773 \\
 
 \subsection{Session Classifier}
 
-The session experiment compares single-turn maximum score, Qwen over compact session evidence, Qwen
-over full transcript evidence, and naive max fusion. R-Judge provides labeled session metrics;
-MHJ is unsafe-only and is therefore used only for unsafe-recall stress.
+The session experiments address a separate question: can multi-turn evidence catch risk missed by
+single-turn scoring? We first tried mathematical accumulation over isolated turn scores; that
+negative result motivated a real session classifier. We then built two representations. The compact
+representation contains a safety-specific state: salient turns, domains, severity, trend,
+composition cues, and evasion/operational-detail indicators. The full-transcript representation is
+an oracle-like baseline that sends the role-aware transcript to the classifier. We compare both
+against single-turn maximum score and against naive max fusion. R-Judge provides labeled session
+metrics; MHJ is unsafe-only and is therefore used only for unsafe-recall stress.
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\linewidth]{session_ablation_rjudge.png}
 \caption{R-Judge session ablation. Full transcript catches single-turn misses, but naive max fusion
-raises false positives. Compact state is efficient but too lossy in v0.}
+raises false positives. Compact state is efficient but too lossy in the current implementation.}
 \label{fig:session}
 \end{figure}
 
-\begin{table}[t]
+\begin{table}[!htbp]
 \centering
 \begin{tabular}{lrrrr}
 \toprule
@@ -269,7 +343,7 @@ by single-turn max but caught by the session condition.}
 \label{tab:session-rjudge}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[!htbp]
 \centering
 \begin{tabular}{lrr}
 \toprule
@@ -286,10 +360,21 @@ the current MHJ slice has no safe sessions.}
 \label{tab:session-mhj}
 \end{table}
 
+\subsection{Tool/Action Gate}
+
+The tool/action stage is included because agent systems can be safe in text while risky in proposed
+actions or arguments. In the current implementation this stage is a deterministic reference gate
+over tool name, action type, argument sensitivity, and permission context. It is not included in the
+quantitative tables because we have not yet built a dedicated benchmark of benign and harmful
+tool/action proposals. The correct current role is therefore design coverage rather than empirical
+claim.
+
+\FloatBarrier
+
 \section{Discussion}
 
 \paragraph{What earns runtime weight?}
-The reviewed-label evidence supports prompt+activation as the v0 runtime core. Activation receives
+The reviewed-label evidence supports prompt+activation as the runtime core. Activation receives
 high weight not because later-layer signals are assumed superior, but because it repeatedly earned
 that role under reviewed-label calibration.
 
@@ -303,14 +388,14 @@ false-positive heavy. Compact session evidence is too lossy in its current form.
 \paragraph{Negative results as contribution.}
 The project would be weaker if it simply added every signal to a final score. RAMP's contribution is
 the ability to evaluate each signal's role under a declared protocol. Some implemented features are
-therefore deliberately assigned zero v0 runtime weight.
+therefore deliberately assigned zero runtime weight.
 
 \section{Limitations}
 
 The reviewed prompt set is targeted toward hard disagreements and is not a broad deployment
 distribution. Some session datasets are unsafe-only or unlabeled, limiting AUROC and FPR claims.
 The activation probe is trained and evaluated on extracted GPT-OSS representations, not on a
-production-serving stack. Output and session experiments are v0-sized and need more human-reviewed
+production-serving stack. Output and session experiments are small-scale and need more human-reviewed
 coverage. Tool/action gating is implemented as a reference design but lacks benchmark validation.
 Finally, all thresholds and weights are research artifacts, not production safety guarantees.
 
@@ -320,24 +405,25 @@ The repository records the frozen policies, report generator, and artifact regis
 consolidated report is generated by:
 \begin{verbatim}
 python scripts/build_v0_consolidated_report.py \
-  --output-md docs/reports/ramp_v0_consolidated_research_report.md \
-  --output-json .artifacts/reports/ramp_v0_consolidated_research_report.json
+  --output-md docs/reports/ramp_v0_consolidated_research_report.md
 \end{verbatim}
+The same script can also emit an ignored JSON summary with \texttt{--output-json}.
 The paper figures are generated by:
 \begin{verbatim}
 python scripts/build_paper_assets.py
 \end{verbatim}
-The current draft corresponds to repository commit \texttt{ff1336c}.
+The paper source, generated figures, and report artifacts are versioned in the project repository.
 
 \section{Conclusion}
 
-RAMP v0 is a feature-complete research reference implementation for multi-stage safety
+RAMP is a feature-complete research reference implementation for multi-stage safety
 classification. Its current paper-grade lesson is careful and bounded: prompt+activation is the
-best-supported v0 runtime core; embedding, output, and session signals add audit or escalation value
+best-supported runtime core; embedding, output, and session signals add audit or escalation value
 but require stronger reviewed evidence before they become positive blocking weights. This result
 supports RAMP as a useful framework for studying cumulative safety evidence, while preserving clear
 limitations around data scale, calibration, and deployment readiness.
 
+\FloatBarrier
 \bibliographystyle{plainnat}
 \bibliography{references}
 
