@@ -7,11 +7,12 @@
 \usepackage{booktabs}
 \usepackage{placeins}
 \usepackage{array}
+\usepackage{float}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{enumitem}
 \usepackage[round]{natbib}
-\usepackage[colorlinks=true,citecolor=blue,linkcolor=blue,urlcolor=blue]{hyperref}
+\usepackage[hidelinks]{hyperref}
 
 \graphicspath{{figures/}}
 
@@ -114,11 +115,24 @@ explicit policies with calibrated model judgments \citep{constitutionalclassifie
 compatible with this direction but focuses on accumulating heterogeneous evidence and preserving
 stage-level provenance.
 
+\clearpage
+
 \section{RAMP Method}
 
 \subsection{Staged Evidence}
 
-Figure~\ref{fig:pipeline} summarizes the RAMP pipeline. The stages are:
+Figure~\ref{fig:pipeline} summarizes the RAMP pipeline.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.84\textwidth]{ramp_pipeline.png}
+\caption{RAMP accumulates staged evidence. The frozen runtime core uses prompt and activation
+scores. Embedding, output, and session signals are retained as audit/escalation evidence until
+larger reviewed datasets justify positive runtime weight.}
+\label{fig:pipeline}
+\end{figure}
+
+The stages are:
 \begin{enumerate}[leftmargin=*]
 \item \textbf{Prompt classifier}: Qwen3Guard scores the incoming prompt.
 \item \textbf{Input-embedding proximity}: GPT-OSS input embeddings are compared with harmful and
@@ -130,15 +144,6 @@ for multi-turn risk.
 \item \textbf{Tool/action gate}: proposed tool calls and action arguments are checked by a
 deterministic reference gate.
 \end{enumerate}
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{ramp_pipeline.png}
-\caption{RAMP accumulates staged evidence. The frozen runtime core uses prompt and activation
-scores. Embedding, output, and session signals are retained as audit/escalation evidence until
-larger reviewed datasets justify positive runtime weight.}
-\label{fig:pipeline}
-\end{figure*}
 
 \subsection{Fusion Policy}
 
@@ -156,7 +161,7 @@ The multi-stage policy artifact also defines non-primary roles. Output scoring i
 audit signal. Session scoring is a calibrated escalation/audit signal. Tool/action gating is a
 deterministic reference gate pending benchmark validation.
 
-\begin{table*}[!htbp]
+\begin{table}[H]
 \centering
 \small
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
@@ -183,7 +188,7 @@ pattern; dedicated benchmark still pending. \\
 table separates implementation status from runtime weight: a signal can be implemented and useful
 without earning positive blocking weight.}
 \label{tab:signals}
-\end{table*}
+\end{table}
 
 \section{Data and Artifacts}
 
@@ -191,7 +196,7 @@ Table~\ref{tab:data} lists the major datasets and artifacts used in the current 
 are intentionally not committed to Git; the repository records their paths, summaries, and
 provenance in the artifact registry.
 
-\begin{table*}[t]
+\begin{table}[H]
 \centering
 \begin{tabular}{llr}
 \toprule
@@ -208,7 +213,7 @@ SafeDialBench & session mining and future review & 4,053 sessions \\
 \caption{RAMP data sources. The corpora are used for different experimental questions and are not
 treated as a single merged benchmark.}
 \label{tab:data}
-\end{table*}
+\end{table}
 
 \section{Experiments}
 
@@ -251,7 +256,7 @@ prompt+activation, and prompt+embedding+activation on human-reviewed labels. We 
 deterministic split stability rather than hand tuning. The decisive comparison for the frozen policy
 is prompt+activation versus prompt+embedding+activation.
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{input_side_split_stability.png}
 \caption{Input-side reviewed split stability. Adding embedding to prompt+activation ties AUROC but
@@ -259,7 +264,7 @@ increases mean false-positive rate, so embedding is assigned zero runtime weight
 \label{fig:inputside}
 \end{figure}
 
-\begin{table}[!htbp]
+\begin{table}[H]
 \centering
 \begin{tabular}{lrrrrr}
 \toprule
@@ -284,7 +289,7 @@ output-inclusive fusion does not improve the strongest input-side result on the 
 set. We therefore retain output scoring as post-generation audit and compliance evidence, not as a
 positive runtime blocking weight.
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{output_ablation.png}
 \caption{Output-classifier ablation. Output scoring is implemented and useful for audit, but the
@@ -292,7 +297,7 @@ current prompt/response set does not justify positive runtime fusion weight.}
 \label{fig:output}
 \end{figure}
 
-\begin{table}[!htbp]
+\begin{table}[H]
 \centering
 \begin{tabular}{lrrr}
 \toprule
@@ -318,7 +323,7 @@ an oracle-like baseline that sends the role-aware transcript to the classifier. 
 against single-turn maximum score and against naive max fusion. R-Judge provides labeled session
 metrics; MHJ is unsafe-only and is therefore used only for unsafe-recall stress.
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{session_ablation_rjudge.png}
 \caption{R-Judge session ablation. Full transcript catches single-turn misses, but naive max fusion
@@ -326,7 +331,7 @@ raises false positives. Compact state is efficient but too lossy in the current 
 \label{fig:session}
 \end{figure}
 
-\begin{table}[!htbp]
+\begin{table}[H]
 \centering
 \begin{tabular}{lrrrr}
 \toprule
@@ -343,7 +348,7 @@ by single-turn max but caught by the session condition.}
 \label{tab:session-rjudge}
 \end{table}
 
-\begin{table}[!htbp]
+\begin{table}[H]
 \centering
 \begin{tabular}{lrr}
 \toprule
