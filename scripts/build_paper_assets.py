@@ -137,7 +137,7 @@ def build_pipeline() -> None:
         outline=INK,
         width=3,
     )
-    centered(draw, ((policy_x1 + policy_x2) // 2, policy_y1 + 36), "v0 policy", title)
+    centered(draw, ((policy_x1 + policy_x2) // 2, policy_y1 + 36), "current policy", title)
     policy = (
         "Primary score: 0.25 prompt + 0.75 activation, threshold 0.53. "
         "Other implemented signals remain audit/escalation evidence until reviewed data "
@@ -152,8 +152,14 @@ def build_pipeline() -> None:
             MUTED,
         )
 
-    for center in (centers[0], centers[2]):
-        draw.line((center[0], y0 + box_h, center[0], policy_y1), fill=INK, width=2)
+    bus_y = 410
+    prompt_x = centers[0][0]
+    activation_x = centers[2][0]
+    policy_mid_x = (policy_x1 + policy_x2) // 2
+    for source_x in (prompt_x, activation_x):
+        draw.line((source_x, y0 + box_h, source_x, bus_y), fill=INK, width=2)
+    draw.line((prompt_x, bus_y, policy_mid_x, bus_y), fill=INK, width=2)
+    draw.line((policy_mid_x, bus_y, policy_mid_x, policy_y1), fill=INK, width=2)
     save(img, "ramp_pipeline.png")
 
 
