@@ -391,6 +391,7 @@ def run_shifted_rung(
                 name: {
                     "auc": holdout[name]["auc"],
                     "f1": holdout[name]["metrics"]["f1"],
+                    "recall": holdout[name]["metrics"]["recall"],
                     "false_positive_rate": holdout[name]["metrics"]["false_positive_rate"],
                 }
                 for name in COMBINATIONS
@@ -400,18 +401,42 @@ def run_shifted_rung(
         "status": "completed",
         "protocol": (
             "Each eligible source held out in turn; probe trained and weights tuned "
-            "on the remaining sources with out-of-fold calibration scores."
+            "on the remaining sources with out-of-fold calibration scores. Survival "
+            "verdicts use holdout-row-weighted means across sources (pre-registered); "
+            "unweighted split means are retained for reference."
         ),
         "holdout_sources": sources,
         "per_source": per_source,
         "num_evaluations": len(sources),
         "aggregate_holdout_metrics": aggregate(splits, COMBINATIONS),
+        "row_weighted_holdout_metrics": row_weighted_metrics(per_source),
     }
+
+
+def row_weighted_metrics(per_source: dict[str, Any]) -> dict[str, dict[str, float | None]]:
+    output: dict[str, dict[str, float | None]] = {}
+    metric_names = ("auc", "f1", "recall", "false_positive_rate")
+    for name in COMBINATIONS:
+        output[name] = {}
+        for metric in metric_names:
+            weighted = [
+                (detail["metrics"][name][metric], detail["holdout_rows"])
+                for detail in per_source.values()
+                if detail["metrics"][name].get(metric) is not None
+            ]
+            total = sum(weight for _, weight in weighted)
+            output[name][metric] = (
+                sum(value * weight for value, weight in weighted) / total if total else None
+            )
+    return output
 
 
 def rung_mean(rung: dict[str, Any], condition: str, metric: str) -> float | None:
     if rung.get("status") != "completed":
         return None
+    row_weighted = rung.get("row_weighted_holdout_metrics")
+    if row_weighted is not None:
+        return row_weighted[condition].get(metric)
     summary = rung["aggregate_holdout_metrics"][condition].get(metric)
     if not summary:
         return None

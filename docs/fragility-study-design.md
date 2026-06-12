@@ -80,13 +80,25 @@ delta, 10,000 resamples, 95% CI excluding zero), because at the current data sca
 split-mean comparisons are underpowered (observed AUROC stdev across splits is ~0.013;
 the embedding effect of interest is ~0.017).
 
+Shifted-rung verdicts use holdout-row-weighted means across held-out sources, not
+unweighted source means: sources differ by an order of magnitude in size and class
+balance (e.g. do_not_answer holds only 5 safe rows, making its FPR granularity 0.2),
+so an unweighted mean lets the smallest, most degenerate source dominate the verdict.
+Per-source results are always reported alongside the weighted aggregate, because
+source-dependence of signal value is itself a finding.
+
 ## Datasets
 
 | Set | Role | Size | Status |
 | --- | --- | --- | --- |
 | Adaptive reviewed set | rungs 1-3, 5; calibration for rung 4 | 448 binary rows | exists (`data/reviewed/`) |
-| Blind reviewed set | rung 4 evaluation; adaptive-bias quantification | target 500 minimum, 1,000 preferred | NOT BUILT |
+| Blind reviewed set | rung 4 evaluation; adaptive-bias quantification | target 500 minimum, 1,000 preferred | v0.1 batch: 500 rows sampled, awaiting labels |
 | Benchmark corpus | extraction, shifted-rung populations | 27,718 rows | exists |
+
+Blind batch v0.1 is fixed at 500 rows to match prior review-batch throughput. If review
+budget allows, a second 500-row blind batch (same sampler, new seed, prior exclusions)
+may be appended BEFORE the headline run; once the headline ladder runs on blind labels,
+the blind set is consumed for confirmatory purposes per the single-use rule.
 
 ### Blind set requirements (operational definition of "blind")
 
