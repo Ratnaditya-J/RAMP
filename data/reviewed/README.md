@@ -14,7 +14,16 @@ population is no longer dependent on local spreadsheet state.
   expanded hard-case review batch.
 - `ramp_prompt_label_review_combined_v0_1_v0_2_v0_4_cleaned.csv`: combined
   prompt-label review set used by the latest prompt/internal-signal calibration.
-- `SHA256SUMS`: SHA-256 digests for the committed CSV files.
+- `ramp_blind_review_batch_v0_1.csv`: BLIND batch awaiting labels. Random
+  500-row sample stratified by source/domain to corpus proportions, excluding
+  all previously reviewed ids. The reviewer CSV shows prompt text and source
+  only: no model scores, buckets, domains, or severity hints.
+- `ramp_blind_review_batch_v0_1.manifest.json`: frozen selection manifest for
+  the blind batch (seed, exclusions, allocation, sampled ids, ids checksum),
+  committed before labeling per `docs/fragility-study-design.md`.
+- `SHA256SUMS`: SHA-256 digests for the committed files. The blind CSV digest
+  covers the UNLABELED template; the labeled file is re-frozen with a new
+  digest when labeling completes.
 
 ## Label Columns
 

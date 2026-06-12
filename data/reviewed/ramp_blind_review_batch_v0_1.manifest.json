@@ -1,0 +1,2559 @@
+{
+  "batch_id": "ramp_blind_review_batch_v0_1",
+  "blinding": "Reviewer CSV contains prompt text and source metadata only; no model scores, buckets, domains, or severity hints. Selection is deterministic from the seed and committed before labeling.",
+  "exclude_review_csvs": [
+    "data/reviewed/ramp_qwen3guard_prompt_label_review_batch_500_v0_1.csv",
+    "data/reviewed/ramp_prompt_label_review_batch_500_v0_2_cleaned.csv",
+    "data/reviewed/ramp_prompt_label_review_batch_500_v0_4_cleaned.csv",
+    "data/reviewed/ramp_prompt_label_review_combined_v0_1_v0_2_v0_4_cleaned.csv"
+  ],
+  "feature_table": ".artifacts/cumulative_signal_eval/ramp_qwen3guard_prompt_internal_signal_feature_table_expanded_reviewed_activation_v0_1.jsonl",
+  "max_rows": 500,
+  "sampled": [
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026073",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0021048",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0004951",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0011793",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0006823",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023134",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0001733",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0008281",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023372",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023555",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0012815",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022861",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0003318",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019544",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0021887",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0006103",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020996",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024673",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0002920",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0010192",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0018554",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "privacy_identity_and_secrets",
+      "id": "bench_comp_0007352",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0011167",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0006611",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0000308",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017019",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0008909",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0002636",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023495",
+      "source": "beavertails"
+    },
+    {
+      "domain": "weapons_and_physical_violence",
+      "id": "bench_comp_0002004",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0002119",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0007559",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0021894",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0025464",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0004507",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019597",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026509",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0004916",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0008266",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0021964",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019306",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017238",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019031",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0013276",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0010279",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022666",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0013884",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0007966",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026097",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0003045",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0002903",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "weapons_and_physical_violence",
+      "id": "bench_comp_0012055",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0004638",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0011929",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023461",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023387",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0005649",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020387",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0005874",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0008574",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0013918",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0015786",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0003655",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0018141",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0010145",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026994",
+      "source": "do_not_answer"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024066",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0007837",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0012656",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "weapons_and_physical_violence",
+      "id": "bench_comp_0012671",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0008406",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0008102",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0005585",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0001562",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024503",
+      "source": "beavertails"
+    },
+    {
+      "domain": "child_safety",
+      "id": "bench_comp_0018291",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0016707",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0006312",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0003859",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0012176",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0003827",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0016458",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0025088",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0009666",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0018663",
+      "source": "harmbench"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022846",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0011792",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0002071",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020450",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017765",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023888",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0015843",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023712",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0009269",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0021873",
+      "source": "beavertails"
+    },
+    {
+      "domain": "child_safety",
+      "id": "bench_comp_0016969",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024989",
+      "source": "beavertails"
+    },
+    {
+      "domain": "weapons_and_physical_violence",
+      "id": "bench_comp_0010035",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0025562",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0015484",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0014204",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0025404",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0010179",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0006280",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0012903",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0009916",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0015897",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019378",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0010554",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0016861",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0007819",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0006021",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "hate_harassment_and_abuse",
+      "id": "bench_comp_0010190",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017167",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0007947",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0015654",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0015580",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023488",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0007563",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "misinformation_manipulation_and_civic",
+      "id": "bench_comp_0006185",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022790",
+      "source": "beavertails"
+    },
+    {
+      "domain": "child_safety",
+      "id": "bench_comp_0011487",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0018411",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0014006",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0016758",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0003155",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0001753",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026575",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022319",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0016895",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019321",
+      "source": "beavertails"
+    },
+    {
+      "domain": "weapons_and_physical_violence",
+      "id": "bench_comp_0012236",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0012514",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "ip_and_content_rights",
+      "id": "bench_comp_0001468",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017509",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019105",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026163",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0012577",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0025761",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0000211",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "privacy_identity_and_secrets",
+      "id": "bench_comp_0006249",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017302",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024471",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0005674",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0007630",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "sexual_safety_and_content",
+      "id": "bench_comp_0018261",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026821",
+      "source": "do_not_answer"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023517",
+      "source": "beavertails"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0002417",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023904",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0006933",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0009198",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024016",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0005621",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0009346",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017330",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024034",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0002566",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0009436",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023566",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0016839",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022435",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024518",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0013629",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0010200",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017743",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0014912",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "ip_and_content_rights",
+      "id": "bench_comp_0003664",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0021992",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020158",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0009886",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017190",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0004234",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0008530",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "child_safety",
+      "id": "bench_comp_0009623",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "weapons_and_physical_violence",
+      "id": "bench_comp_0003759",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026716",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0009327",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0016618",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0010759",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020883",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0013715",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017120",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020846",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026780",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0011863",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0002665",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023249",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0015309",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017662",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0014891",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0009856",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0003145",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0002127",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0003949",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0013060",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "child_safety",
+      "id": "bench_comp_0005497",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0027157",
+      "source": "do_not_answer"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0001740",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0013028",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019632",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020345",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0003962",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020626",
+      "source": "beavertails"
+    },
+    {
+      "domain": "child_safety",
+      "id": "bench_comp_0009005",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "ip_and_content_rights",
+      "id": "bench_comp_0012433",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019247",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0025990",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0016867",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0014432",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026506",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0027011",
+      "source": "do_not_answer"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0007690",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017819",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0025708",
+      "source": "beavertails"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0003918",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0004550",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023156",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0009809",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "child_safety",
+      "id": "bench_comp_0009141",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "weapons_and_physical_violence",
+      "id": "bench_comp_0003432",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0010094",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0013753",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019628",
+      "source": "beavertails"
+    },
+    {
+      "domain": "ip_and_content_rights",
+      "id": "bench_comp_0016173",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0025034",
+      "source": "beavertails"
+    },
+    {
+      "domain": "child_safety",
+      "id": "bench_comp_0009573",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022593",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020428",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023732",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0011882",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0000391",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026329",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026075",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0011443",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0000832",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0001109",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0007382",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0010788",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0027552",
+      "source": "do_not_answer"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0018092",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "ip_and_content_rights",
+      "id": "bench_comp_0002521",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0027620",
+      "source": "do_not_answer"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0015765",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024004",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0004337",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0003278",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0010132",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0027351",
+      "source": "do_not_answer"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0002056",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0002715",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "child_safety",
+      "id": "bench_comp_0012372",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0010459",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0006579",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "agent_tool_and_system_integrity",
+      "id": "bench_comp_0003379",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0025355",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0006230",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017018",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022407",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0005869",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "privacy_identity_and_secrets",
+      "id": "bench_comp_0010802",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020648",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023637",
+      "source": "beavertails"
+    },
+    {
+      "domain": "hate_harassment_and_abuse",
+      "id": "bench_comp_0010991",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020870",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0012922",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0021194",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019295",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0001310",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023915",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0002799",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0012712",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0003776",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0006817",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026333",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0017223",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0010723",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "sexual_safety_and_content",
+      "id": "bench_comp_0004453",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022067",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0017866",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0005855",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020532",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026645",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0010390",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0006503",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022715",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0007292",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0018231",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0001834",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0027345",
+      "source": "do_not_answer"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024861",
+      "source": "beavertails"
+    },
+    {
+      "domain": "agent_tool_and_system_integrity",
+      "id": "bench_comp_0007675",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026326",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020697",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0003765",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0011163",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020350",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0001627",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0011438",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "ip_and_content_rights",
+      "id": "bench_comp_0011389",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024301",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022976",
+      "source": "beavertails"
+    },
+    {
+      "domain": "sexual_safety_and_content",
+      "id": "bench_comp_0005685",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020348",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0009209",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0027543",
+      "source": "do_not_answer"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0001379",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017154",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0025611",
+      "source": "beavertails"
+    },
+    {
+      "domain": "sexual_safety_and_content",
+      "id": "bench_comp_0003015",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026424",
+      "source": "beavertails"
+    },
+    {
+      "domain": "child_safety",
+      "id": "bench_comp_0012434",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0010994",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0021335",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0016745",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "misinformation_manipulation_and_civic",
+      "id": "bench_comp_0009532",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "cbrn_and_hazardous_materials",
+      "id": "bench_comp_0016264",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0010843",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022727",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0008115",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0014954",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0001514",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024782",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0007840",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0013936",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0012793",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0018273",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0004131",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0016299",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0014402",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0027267",
+      "source": "do_not_answer"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0014500",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022447",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0005179",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0010117",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0004633",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0016939",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0016836",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0011466",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024353",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024537",
+      "source": "beavertails"
+    },
+    {
+      "domain": "privacy_identity_and_secrets",
+      "id": "bench_comp_0005661",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0009188",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0013314",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0012741",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022623",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0016467",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0009250",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023336",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0006881",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017357",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0007116",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0012286",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0014792",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0025012",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0011885",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0008029",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019538",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0015184",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "sexual_safety_and_content",
+      "id": "bench_comp_0017053",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017078",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0021636",
+      "source": "beavertails"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0004121",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0016518",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017882",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024825",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026950",
+      "source": "do_not_answer"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0027243",
+      "source": "do_not_answer"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0027421",
+      "source": "do_not_answer"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0027477",
+      "source": "do_not_answer"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024098",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020581",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0015402",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0006699",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026903",
+      "source": "do_not_answer"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0025597",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0001226",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0009763",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020662",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0000043",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0014603",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024703",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0006085",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "hate_harassment_and_abuse",
+      "id": "bench_comp_0003419",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0016638",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0021662",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0003161",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0027299",
+      "source": "do_not_answer"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0001719",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024582",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0025028",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019677",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022547",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019663",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0003396",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0013225",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0006959",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0018955",
+      "source": "harmbench"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0021520",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0004408",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0002130",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019739",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0025933",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017659",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0001684",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019392",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023124",
+      "source": "beavertails"
+    },
+    {
+      "domain": "privacy_identity_and_secrets",
+      "id": "bench_comp_0012612",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0025726",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0011048",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0009735",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0015986",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0004870",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022839",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0007213",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022243",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0012232",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024972",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017500",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0002743",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0021397",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024822",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0014295",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0003825",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0013760",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0018453",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0012651",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0023585",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0007331",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019860",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0014764",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017418",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0002138",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0025492",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0020273",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0025879",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0021465",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0022673",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017864",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0017954",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0000212",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0019858",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0001367",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0021108",
+      "source": "beavertails"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0024022",
+      "source": "beavertails"
+    },
+    {
+      "domain": "sexual_safety_and_content",
+      "id": "bench_comp_0006360",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0005978",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0000705",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0026731",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0013412",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0004486",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "weapons_and_physical_violence",
+      "id": "bench_comp_0003701",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0008672",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "sexual_safety_and_content",
+      "id": "bench_comp_0001115",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0016602",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0000447",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0006869",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0007758",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0012471",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0018479",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0006042",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "privacy_identity_and_secrets",
+      "id": "bench_comp_0009943",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0015998",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0010232",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0008941",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0015844",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0013313",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0009637",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0016313",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0006531",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0000030",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "ip_and_content_rights",
+      "id": "bench_comp_0005294",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0013690",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "weapons_and_physical_violence",
+      "id": "bench_comp_0005013",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0006387",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0003214",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "hate_harassment_and_abuse",
+      "id": "bench_comp_0017199",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "hate_harassment_and_abuse",
+      "id": "bench_comp_0018306",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "self_harm_and_wellbeing",
+      "id": "bench_comp_0003281",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0017372",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "ip_and_content_rights",
+      "id": "bench_comp_0004018",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0006138",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "ip_and_content_rights",
+      "id": "bench_comp_0001886",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0006004",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "regulated_advice",
+      "id": "bench_comp_0007554",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "hate_harassment_and_abuse",
+      "id": "bench_comp_0001633",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "self_harm_and_wellbeing",
+      "id": "bench_comp_0007079",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "cbrn_and_hazardous_materials",
+      "id": "bench_comp_0016480",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "ip_and_content_rights",
+      "id": "bench_comp_0000933",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "ip_and_content_rights",
+      "id": "bench_comp_0005607",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "ip_and_content_rights",
+      "id": "bench_comp_0011654",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "ip_and_content_rights",
+      "id": "bench_comp_0018845",
+      "source": "harmbench"
+    },
+    {
+      "domain": "weapons_and_physical_violence",
+      "id": "bench_comp_0005048",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "weapons_and_physical_violence",
+      "id": "bench_comp_0001850",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "hate_harassment_and_abuse",
+      "id": "bench_comp_0002649",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0018777",
+      "source": "harmbench"
+    },
+    {
+      "domain": "cyber_abuse",
+      "id": "bench_comp_0025298",
+      "source": "beavertails"
+    },
+    {
+      "domain": "nonviolent_illegal_activity",
+      "id": "bench_comp_0018995",
+      "source": "harmbench"
+    },
+    {
+      "domain": "agent_tool_and_system_integrity",
+      "id": "bench_comp_0012769",
+      "source": "wildguardmix"
+    },
+    {
+      "domain": "weapons_and_physical_violence",
+      "id": "bench_comp_0022345",
+      "source": "beavertails"
+    }
+  ],
+  "sampled_ids_sha256": "edfd44cb25eaaa0484091947996b7b9eb38c5539986f82dadaf0b29a4dd365e9",
+  "seed": "ramp_blind_batch_v0_1",
+  "summary": {
+    "allocation": {
+      "beavertails/cbrn_and_hazardous_materials": 0,
+      "beavertails/cyber_abuse": 1,
+      "beavertails/privacy_identity_and_secrets": 0,
+      "beavertails/regulated_advice": 141,
+      "beavertails/weapons_and_physical_violence": 1,
+      "do_not_answer/cbrn_and_hazardous_materials": 0,
+      "do_not_answer/cyber_abuse": 0,
+      "do_not_answer/regulated_advice": 16,
+      "do_not_answer/weapons_and_physical_violence": 0,
+      "harmbench/agent_tool_and_system_integrity": 0,
+      "harmbench/cbrn_and_hazardous_materials": 0,
+      "harmbench/child_safety": 0,
+      "harmbench/cyber_abuse": 0,
+      "harmbench/hate_harassment_and_abuse": 0,
+      "harmbench/ip_and_content_rights": 1,
+      "harmbench/misinformation_manipulation_and_civic": 0,
+      "harmbench/nonviolent_illegal_activity": 4,
+      "harmbench/privacy_identity_and_secrets": 0,
+      "harmbench/regulated_advice": 0,
+      "harmbench/self_harm_and_wellbeing": 0,
+      "harmbench/sexual_safety_and_content": 0,
+      "harmbench/weapons_and_physical_violence": 0,
+      "wildguardmix/agent_tool_and_system_integrity": 3,
+      "wildguardmix/cbrn_and_hazardous_materials": 2,
+      "wildguardmix/child_safety": 10,
+      "wildguardmix/cyber_abuse": 18,
+      "wildguardmix/hate_harassment_and_abuse": 7,
+      "wildguardmix/ip_and_content_rights": 12,
+      "wildguardmix/misinformation_manipulation_and_civic": 2,
+      "wildguardmix/nonviolent_illegal_activity": 213,
+      "wildguardmix/privacy_identity_and_secrets": 6,
+      "wildguardmix/regulated_advice": 43,
+      "wildguardmix/self_harm_and_wellbeing": 2,
+      "wildguardmix/sexual_safety_and_content": 7,
+      "wildguardmix/weapons_and_physical_violence": 11
+    },
+    "corpus_rows": 27718,
+    "eligible_rows": 26659,
+    "excluded_ids": 1059,
+    "sampled_rows": 500
+  }
+}
