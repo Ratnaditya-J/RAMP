@@ -137,4 +137,14 @@ evidence, escalation on unresolved risk states). This is deliberately not the he
 
 ## Deviations Log
 
-(Empty. Append dated entries here if anything above changes after freeze.)
+- 2026-06-17: Implemented the pre-registered paired bootstrap (`scripts/evaluate_signal_survival_ladder.py`).
+  Clarifications, not changes to the frozen rule: (a) the bootstrap runs on the blind rung
+  and the shifted rung (both single-evaluation); (b) for the shifted rung the significance
+  test is a STRATIFIED (within-source) paired bootstrap of the same row-weighted AUROC/F1
+  delta the verdict uses, so the CI annotates exactly the reported statistic (an earlier
+  pooled cross-source bootstrap was rejected as an estimand mismatch); per-source
+  bootstraps are also reported; (c) the survival verdict remains the pre-registered
+  mean-delta sign rule — bootstrap CIs are reported alongside it (a `*`/`ns` marker in the
+  table), they do not redefine the verdict; (d) AUROC/F1 in the bootstrap use the same
+  average-rank and `score >= threshold` conventions as the existing reviewed-signal
+  evaluator, verified equal on 200 random cases including ties.

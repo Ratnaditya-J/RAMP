@@ -106,6 +106,8 @@ def test_signal_survival_ladder_runs_all_local_rungs(tmp_path: Path) -> None:
             "0.50",
             "--epochs",
             "3",
+            "--bootstrap-resamples",
+            "40",
         ],
         check=True,
     )
@@ -121,6 +123,15 @@ def test_signal_survival_ladder_runs_all_local_rungs(tmp_path: Path) -> None:
     assert rungs["blind"]["status"] == "pending"
     assert rungs["shifted"]["status"] == "completed"
     assert sorted(rungs["shifted"]["holdout_sources"]) == ["source_a", "source_b"]
+
+    # Shifted rung carries a pooled paired-bootstrap and per-source bootstraps.
+    shifted_bootstrap = rungs["shifted"]["bootstrap"]
+    assert "prompt_embedding_calibrated" in shifted_bootstrap
+    entry = shifted_bootstrap["prompt_embedding_calibrated"]
+    assert set(entry["auc"]) >= {"delta", "ci95", "significant"}
+    assert len(entry["auc"]["ci95"]) == 2
+    for source in ("source_a", "source_b"):
+        assert "bootstrap" in rungs["shifted"]["per_source"][source]
 
     # The naive rung's probe is in-sample; the crossfit rung must use out-of-fold
     # calibration scores instead.
@@ -232,6 +243,8 @@ def test_signal_survival_ladder_blind_rung_with_blind_csv(tmp_path: Path) -> Non
             "0.50",
             "--epochs",
             "3",
+            "--bootstrap-resamples",
+            "40",
         ],
         check=True,
     )
@@ -245,3 +258,11 @@ def test_signal_survival_ladder_blind_rung_with_blind_csv(tmp_path: Path) -> Non
         "mixed",
         "fails",
     }
+
+    # Blind rung carries paired-bootstrap CIs surfaced on the survival cell.
+    blind_cell = report["survival_table"]["activation"]["blind"]
+    assert "auc_ci95" in blind_cell
+    assert isinstance(blind_cell["auc_significant"], bool)
+    bootstrap = blind["bootstrap"]["prompt_activation_calibrated"]
+    assert bootstrap["num_rows"] == 8
+    assert bootstrap["resamples_used"] <= 40

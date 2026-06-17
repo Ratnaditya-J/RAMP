@@ -21,6 +21,7 @@ improvement is "mixed"; neither is "fails".
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from collections import Counter
 from pathlib import Path
@@ -32,6 +33,7 @@ from evaluate_calibrated_signal_combinations import (
     calibrate_combination,
     evaluate_combination,
     stratified_split,
+    weighted_score,
 )
 from evaluate_leakage_free_activation_fusion import (
     attach_split_activation_scores,
@@ -57,6 +59,261 @@ SIGNAL_CONDITIONS = {
 }
 
 BASELINE_CONDITION = "prompt_only_calibrated"
+
+CANDIDATE_CONDITIONS = tuple(name for name in COMBINATIONS if name != BASELINE_CONDITION)
+
+
+# --- Paired bootstrap for single-evaluation rungs (blind, shifted) -----------------
+# The naive/split/crossfit rungs report stdev across many splits. The blind rung and
+# each per-source shifted holdout are single evaluations, so per-row paired bootstrap
+# CIs (pre-registered: 10,000 resamples, 95% CI excluding zero) are how significance is
+# assessed there. AUC uses the same average-rank formula as
+# evaluate_reviewed_cumulative_signals.auc; F1 uses score >= threshold, matching metrics().
+
+
+def _seed_int(seed: str) -> int:
+    return int.from_bytes(hashlib.sha256(str(seed).encode()).digest()[:8], "big")
+
+
+def _fast_auc(np: Any, labels_a: Any, scores_a: Any) -> float | None:
+    positives = int(labels_a.sum())
+    total = int(labels_a.size)
+    negatives = total - positives
+    if positives == 0 or negatives == 0:
+        return None
+    order = np.argsort(scores_a, kind="mergesort")
+    s_sorted = scores_a[order]
+    ranks_sorted = np.empty(total, dtype=np.float64)
+    index = 0
+    while index < total:
+        end = index
+        value = s_sorted[index]
+        while end + 1 < total and s_sorted[end + 1] == value:
+            end += 1
+        ranks_sorted[index : end + 1] = (index + end) / 2.0 + 1.0
+        index = end + 1
+    ranks = np.empty(total, dtype=np.float64)
+    ranks[order] = ranks_sorted
+    positive_rank_sum = float(ranks[labels_a == 1].sum())
+    return (positive_rank_sum - positives * (positives + 1) / 2.0) / (positives * negatives)
+
+
+def _f1_at(np: Any, labels_a: Any, scores_a: Any, threshold: Any) -> float:
+    predicted = scores_a >= threshold
+    tp = int(np.sum(predicted & (labels_a == 1)))
+    fp = int(np.sum(predicted & (labels_a == 0)))
+    fn = int(np.sum(~predicted & (labels_a == 1)))
+    denominator = 2 * tp + fp + fn
+    return (2 * tp / denominator) if denominator else 0.0
+
+
+def _delta_summary(np: Any, deltas: list[float], *, point: float | None) -> dict[str, Any]:
+    if not deltas:
+        return {"delta": point, "ci95": [None, None], "significant": False, "resamples": 0}
+    array = np.asarray(deltas, dtype=np.float64)
+    low = float(np.percentile(array, 2.5))
+    high = float(np.percentile(array, 97.5))
+    return {
+        "delta": point,
+        "ci95": [low, high],
+        "significant": bool(low > 0 or high < 0),
+        "resamples": len(deltas),
+    }
+
+
+def paired_bootstrap(
+    np: Any,
+    labels: list[int],
+    base_scores: list[float],
+    base_threshold: Any,
+    candidates: list[tuple[str, list[float], Any]],
+    *,
+    num_resamples: int,
+    seed: str,
+) -> dict[str, dict[str, Any]]:
+    """Per-row paired bootstrap of AUROC and F1 deltas vs the prompt-only baseline.
+
+    Thresholds may be scalars (blind rung) or per-row arrays (pooled shifted rung, where
+    each row was scored by its own leave-one-source-out calibration).
+    """
+    labels_a = np.asarray(labels, dtype=np.int64)
+    base_s = np.asarray(base_scores, dtype=np.float64)
+    base_t = np.asarray(base_threshold, dtype=np.float64)
+    cand = [
+        (name, np.asarray(scores, dtype=np.float64), np.asarray(threshold, dtype=np.float64))
+        for name, scores, threshold in candidates
+    ]
+    total = int(labels_a.size)
+    base_auc_point = _fast_auc(np, labels_a, base_s)
+    base_f1_point = _f1_at(np, labels_a, base_s, base_t)
+
+    rng = np.random.default_rng(_seed_int(seed))
+    draws = rng.integers(0, total, size=(num_resamples, total))
+    accumulator = {name: {"auc": [], "f1": []} for name, _, _ in cand}
+    used = 0
+    for resample in range(num_resamples):
+        idx = draws[resample]
+        labels_b = labels_a[idx]
+        positives = int(labels_b.sum())
+        if positives == 0 or positives == total:
+            continue
+        used += 1
+        base_sb = base_s[idx]
+        base_tb = base_t[idx] if base_t.ndim else base_t
+        base_auc = _fast_auc(np, labels_b, base_sb)
+        base_f1 = _f1_at(np, labels_b, base_sb, base_tb)
+        for name, scores, threshold in cand:
+            cand_sb = scores[idx]
+            cand_tb = threshold[idx] if threshold.ndim else threshold
+            cand_auc = _fast_auc(np, labels_b, cand_sb)
+            if base_auc is not None and cand_auc is not None:
+                accumulator[name]["auc"].append(cand_auc - base_auc)
+            accumulator[name]["f1"].append(_f1_at(np, labels_b, cand_sb, cand_tb) - base_f1)
+
+    output: dict[str, dict[str, Any]] = {}
+    for name, scores, threshold in cand:
+        cand_auc_point = _fast_auc(np, labels_a, scores)
+        auc_point = (
+            None
+            if base_auc_point is None or cand_auc_point is None
+            else cand_auc_point - base_auc_point
+        )
+        f1_point = _f1_at(np, labels_a, scores, threshold) - base_f1_point
+        output[name] = {
+            "auc": _delta_summary(np, accumulator[name]["auc"], point=auc_point),
+            "f1": _delta_summary(np, accumulator[name]["f1"], point=f1_point),
+            "resamples_used": used,
+            "num_rows": total,
+        }
+    return output
+
+
+def _row_weighted_delta(
+    np: Any,
+    blocks: list[dict[str, Any]],
+    index_per_block: list[Any],
+    condition: str,
+) -> tuple[float | None, float]:
+    """Row-weighted AUROC and F1 deltas (candidate - baseline) across source blocks.
+
+    Mirrors the row_weighted_metrics verdict statistic exactly: each block contributes its
+    own metric weighted by its holdout-row count. AUC delta is None if any block resample
+    is single-class (its AUC undefined).
+    """
+    weight_total = 0
+    auc_base = auc_cand = 0.0
+    f1_base = f1_cand = 0.0
+    auc_ok = True
+    for block, idx in zip(blocks, index_per_block, strict=True):
+        labels_b = block["labels"][idx]
+        weight = int(idx.size)
+        weight_total += weight
+        base_scores, base_threshold = block["scores"][BASELINE_CONDITION]
+        cand_scores, cand_threshold = block["scores"][condition]
+        base_scores = base_scores[idx]
+        cand_scores = cand_scores[idx]
+        base_auc = _fast_auc(np, labels_b, base_scores)
+        cand_auc = _fast_auc(np, labels_b, cand_scores)
+        if base_auc is None or cand_auc is None:
+            auc_ok = False
+        else:
+            auc_base += base_auc * weight
+            auc_cand += cand_auc * weight
+        f1_base += _f1_at(np, labels_b, base_scores, base_threshold) * weight
+        f1_cand += _f1_at(np, labels_b, cand_scores, cand_threshold) * weight
+    auc_delta = (auc_cand - auc_base) / weight_total if auc_ok and weight_total else None
+    f1_delta = (f1_cand - f1_base) / weight_total if weight_total else 0.0
+    return auc_delta, f1_delta
+
+
+def stratified_paired_bootstrap(
+    np: Any,
+    source_data: list[tuple[list[int], dict[str, tuple[list[float], float]]]],
+    *,
+    num_resamples: int,
+    seed: str,
+) -> dict[str, dict[str, Any]]:
+    """Stratified (within-source) paired bootstrap of the row-weighted verdict statistic.
+
+    Used for the shifted rung so the CI annotates the SAME row-weighted AUROC/F1 delta the
+    verdict reports, rather than a pooled cross-source estimand.
+    """
+    blocks = [
+        {
+            "labels": np.asarray(labels, dtype=np.int64),
+            "scores": {
+                name: (np.asarray(scores, dtype=np.float64), float(threshold))
+                for name, (scores, threshold) in data.items()
+            },
+        }
+        for labels, data in source_data
+    ]
+    full_index = [np.arange(block["labels"].size) for block in blocks]
+    total_rows = sum(int(block["labels"].size) for block in blocks)
+
+    rng = np.random.default_rng(_seed_int(seed))
+    resampled_index = [
+        rng.integers(0, block["labels"].size, size=(num_resamples, block["labels"].size))
+        for block in blocks
+    ]
+
+    output: dict[str, dict[str, Any]] = {}
+    for condition in CANDIDATE_CONDITIONS:
+        auc_point, f1_point = _row_weighted_delta(np, blocks, full_index, condition)
+        auc_deltas: list[float] = []
+        f1_deltas: list[float] = []
+        for resample in range(num_resamples):
+            index_per_block = [resampled_index[b][resample] for b in range(len(blocks))]
+            auc_delta, f1_delta = _row_weighted_delta(np, blocks, index_per_block, condition)
+            if auc_delta is not None:
+                auc_deltas.append(auc_delta)
+            f1_deltas.append(f1_delta)
+        output[condition] = {
+            "auc": _delta_summary(np, auc_deltas, point=auc_point),
+            "f1": _delta_summary(np, f1_deltas, point=f1_point),
+            "resamples_used": len(f1_deltas),
+            "num_rows": total_rows,
+        }
+    return output
+
+
+def collect_eval_data(
+    rows: list[dict[str, Any]],
+    calibrations: dict[str, dict[str, Any]],
+) -> tuple[list[int], dict[str, tuple[list[float], float]]]:
+    labels = [int(binary_label(str(row["reviewed_label"]))) for row in rows]
+    data = {
+        name: (
+            [weighted_score(row, calibration["weights"]) for row in rows],
+            float(calibration["threshold"]),
+        )
+        for name, calibration in calibrations.items()
+    }
+    return labels, data
+
+
+def bootstrap_for_holdout(
+    np: Any,
+    rows: list[dict[str, Any]],
+    calibrations: dict[str, dict[str, Any]],
+    *,
+    num_resamples: int,
+    seed: str,
+) -> dict[str, dict[str, Any]]:
+    labels, data = collect_eval_data(rows, calibrations)
+    base_scores, base_threshold = data[BASELINE_CONDITION]
+    candidates = [
+        (name, data[name][0], data[name][1]) for name in CANDIDATE_CONDITIONS if name in data
+    ]
+    return paired_bootstrap(
+        np,
+        labels,
+        base_scores,
+        base_threshold,
+        candidates,
+        num_resamples=num_resamples,
+        seed=seed,
+    )
 
 
 def parse_args() -> argparse.Namespace:
@@ -101,6 +358,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--learning-rate", type=float, default=0.10)
     parser.add_argument("--l2", type=float, default=0.001)
+    parser.add_argument(
+        "--bootstrap-resamples",
+        type=int,
+        default=10000,
+        help="Paired-bootstrap resamples for the single-evaluation rungs (blind, shifted).",
+    )
     return parser.parse_args()
 
 
@@ -307,16 +570,25 @@ def run_blind_rung(
     calibrations = calibrate_all(calibration_rows, args)
     holdout = evaluate_all(holdout_rows, calibrations, high_severity_categories)
     splits = [{"split_index": 0, "calibrations": calibrations, "holdout": holdout}]
+    bootstrap = bootstrap_for_holdout(
+        np,
+        holdout_rows,
+        calibrations,
+        num_resamples=args.bootstrap_resamples,
+        seed=f"{args.seed_prefix}:blind:bootstrap",
+    )
     return {
         "status": "completed",
         "protocol": (
             "Calibrated on the full adaptive set with out-of-fold probe scores; probe "
-            "trained on the adaptive set only; evaluated once on blind rows."
+            "trained on the adaptive set only; evaluated once on blind rows. Significance "
+            "from a per-row paired bootstrap of AUROC/F1 deltas vs prompt-only."
         ),
         "activation_probe": probe_report,
         "blind_rows": len(holdout_rows),
         "num_evaluations": 1,
         "aggregate_holdout_metrics": aggregate(splits, COMBINATIONS),
+        "bootstrap": bootstrap,
     }
 
 
@@ -360,6 +632,7 @@ def run_shifted_rung(
         }
     splits = []
     per_source = {}
+    source_data: list[tuple[list[int], dict[str, tuple[list[float], float]]]] = []
     for split_index, source in enumerate(sources):
         holdout_rows = [
             dict(row) for row in eval_rows if str(row.get("source", "unknown")) == source
@@ -383,6 +656,8 @@ def run_shifted_rung(
         splits.append(
             {"split_index": split_index, "calibrations": calibrations, "holdout": holdout}
         )
+        source_labels, source_scores = collect_eval_data(holdout_rows, calibrations)
+        source_data.append((source_labels, source_scores))
         per_source[source] = {
             "holdout_rows": len(holdout_rows),
             "calibration_rows": len(calibration_rows),
@@ -396,20 +671,41 @@ def run_shifted_rung(
                 }
                 for name in COMBINATIONS
             },
+            "bootstrap": paired_bootstrap(
+                np,
+                source_labels,
+                source_scores[BASELINE_CONDITION][0],
+                source_scores[BASELINE_CONDITION][1],
+                [
+                    (name, source_scores[name][0], source_scores[name][1])
+                    for name in CANDIDATE_CONDITIONS
+                ],
+                num_resamples=args.bootstrap_resamples,
+                seed=f"{args.seed_prefix}:shifted:{source}:bootstrap",
+            ),
         }
+    stratified_bootstrap = stratified_paired_bootstrap(
+        np,
+        source_data,
+        num_resamples=args.bootstrap_resamples,
+        seed=f"{args.seed_prefix}:shifted:stratified:bootstrap",
+    )
     return {
         "status": "completed",
         "protocol": (
             "Each eligible source held out in turn; probe trained and weights tuned "
             "on the remaining sources with out-of-fold calibration scores. Survival "
             "verdicts use holdout-row-weighted means across sources (pre-registered); "
-            "unweighted split means are retained for reference."
+            "unweighted split means are retained for reference. Significance from a "
+            "stratified (within-source) paired bootstrap of the same row-weighted "
+            "AUROC/F1 delta the verdict uses; per-source bootstraps are also reported."
         ),
         "holdout_sources": sources,
         "per_source": per_source,
         "num_evaluations": len(sources),
         "aggregate_holdout_metrics": aggregate(splits, COMBINATIONS),
         "row_weighted_holdout_metrics": row_weighted_metrics(per_source),
+        "bootstrap": stratified_bootstrap,
     }
 
 
@@ -465,7 +761,17 @@ def survival_verdict(rung: dict[str, Any], condition: str) -> dict[str, Any]:
         verdict = "mixed"
     else:
         verdict = "fails"
-    return {"verdict": verdict, "auc_delta": auc_delta, "f1_delta": f1_delta}
+    cell = {"verdict": verdict, "auc_delta": auc_delta, "f1_delta": f1_delta}
+    # The verdict rule is the pre-registered mean-delta sign and is unchanged. For the
+    # single-evaluation rungs we additionally surface the paired-bootstrap CIs so a
+    # survived/failed verdict can be read against its statistical significance.
+    bootstrap = rung.get("bootstrap", {}).get(condition)
+    if bootstrap is not None:
+        cell["auc_ci95"] = bootstrap["auc"]["ci95"]
+        cell["auc_significant"] = bootstrap["auc"]["significant"]
+        cell["f1_ci95"] = bootstrap["f1"]["ci95"]
+        cell["f1_significant"] = bootstrap["f1"]["significant"]
+    return cell
 
 
 def build_survival_table(rungs: dict[str, dict[str, Any]]) -> dict[str, Any]:
@@ -513,9 +819,17 @@ def markdown_report(report: dict[str, Any]) -> str:
             cell = cells[rung_name]
             text = VERDICT_GLYPHS.get(cell["verdict"], cell["verdict"])
             if cell.get("auc_delta") is not None:
-                text += f" (dAUC {cell['auc_delta']:+.4f})"
+                text += f" (dAUC {cell['auc_delta']:+.4f}"
+                if "auc_significant" in cell:
+                    text += "*" if cell["auc_significant"] else " ns"
+                text += ")"
             row.append(text)
         lines.append("| " + " | ".join(row) + " |")
+    lines.append("")
+    lines.append(
+        "`*` = paired-bootstrap 95% CI on the AUROC delta excludes zero (blind/shifted "
+        "rungs only); `ns` = CI includes zero."
+    )
     for rung_name in RUNG_ORDER:
         rung = report["rungs"].get(rung_name)
         if not rung or rung.get("status") != "completed":
