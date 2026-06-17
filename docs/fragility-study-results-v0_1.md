@@ -78,8 +78,73 @@ and more defensible claim than "all signals are fragile."
    the adaptive set, so full_fusion == prompt+embedding on the blind holdout (identical
    numbers above). Activation's blind lift comes from the prompt+activation condition.
 
+## Hardening Result 1: MLP probe (the "weak linear probe" defense)
+
+Re-running the full ladder with an MLP activation probe (one hidden layer) instead of the
+linear probe leaves the verdicts essentially unchanged:
+
+| Signal | crossfit (linear -> mlp) | blind (linear -> mlp) | shifted |
+| --- | --- | --- | --- |
+| activation | mixed +0.016 -> mixed +0.016 | mixed +0.034* -> mixed +0.028* | fails (both) |
+| embedding | survives (both) | mixed -0.020 (both) | survives (both) |
+
+Conclusion: the activation findings — significant lift on blind, collapse under shift — are
+NOT an artifact of using a weak linear probe; a stronger probe behaves the same. This closes
+the predictable "you used the weakest probe" objection.
+
+## Hardening Result 2: external guards ("why not a bigger guard?")
+
+Two independent-lineage guards scored the eval prompts (not Qwen, not the Claude judge, not
+GPT-OSS).
+
+Dedicated guard, operating-point comparison (binary verdict; recall/FPR/F1 at its own point):
+
+| Set | Guard | Recall | FPR | F1 |
+| --- | --- | ---: | ---: | ---: |
+| Adaptive (human) | Llama Guard 4 12B | 0.623 | 0.048 | 0.752 |
+| Adaptive (human) | Qwen3Guard 0.6B | 0.973 | 0.133 | 0.941 |
+| Blind (judge) | Llama Guard 4 12B | 0.925 | 0.207 | 0.827 |
+| Blind (judge) | Qwen3Guard 0.6B | 1.000 | 0.360 | 0.786 |
+
+Strong general-model guard as the front door (Gemini 2.5 Pro, continuous), prompt-only AUROC:
+
+| Front door | AUC adaptive (human) | AUC blind (judge) |
+| --- | ---: | ---: |
+| Qwen3Guard 0.6B | 0.945 | 0.850 |
+| Gemini-2.5-pro-as-guard | 0.791 | 0.976 |
+
+Conclusions:
+- Bigger/stronger is not better as a guard. A 12B dedicated guard misses 38% of unsafe
+  prompts on the human-labeled hard-case set; a frontier general model used as a guard is
+  worse than the 0.6B dedicated guard on human labels (AUC 0.79 vs 0.945).
+- The Gemini-guard's near-perfect blind AUROC (0.976) is a CONFOUND, not a win: the blind
+  labels are Claude-judge labels, so guard and labels are both frontier-LLM safety
+  judgments sharing method variance. This is a concrete demonstration of why LLM-judge
+  blind labels require human validation.
+- Internal signals' apparent value depends on the front door: on top of the strong
+  (label-aligned) guard they add ~0 on blind; on top of the same guard where it is weak
+  (human-labeled), activation adds +0.145 AUROC. "Earning weight" is again protocol- and
+  label-dependent.
+
+## Hardening Result 3: inter-judge agreement on the blind labels
+
+A second independent frontier judge (Gemini 2.5 Pro) relabeled the blind set. Agreement
+with the Claude Opus 4.8 judge on the shared binary rows:
+
+- n = 338, raw agreement = 0.944, Cohen's kappa = 0.887 ("almost perfect").
+- Disagreement is near one-directional: Gemini flags slightly more as unsafe (unsafe rate
+  0.476 vs 0.426); only 1 of 338 rows is Claude-unsafe / Gemini-safe.
+
+This makes the silver labels more credible — they are not idiosyncratic to one model. BUT
+high inter-LLM agreement does not rule out a shared LLM-vs-human bias (the guard confound
+above shows frontier models can agree with each other and still drift from humans). So the
+human audit remains the final check, now as a third leg rather than a single point of
+failure.
+
 ## Next
 
-- Human-audit ~80 blind rows; report kappa; promote/qualify the blind rung accordingly.
-- Add one strong external guard (Qwen3Guard-4B / Llama Guard 3) as a prompt-signal variant
-  on the blind set to answer "why not a bigger guard?".
+- Human-audit ~80 blind rows; report kappa vs the judges. This is the last gate before any
+  paper claim on the blind rung; with inter-judge kappa already 0.887, the audit is a
+  confirmation rather than a single point of failure.
+- (Paper-2 scope, not now) extend the ladder across multiple target models, probe families,
+  and an external system.
