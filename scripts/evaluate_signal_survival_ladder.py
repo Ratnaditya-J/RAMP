@@ -359,6 +359,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--learning-rate", type=float, default=0.10)
     parser.add_argument("--l2", type=float, default=0.001)
     parser.add_argument(
+        "--probe-kind",
+        choices=["linear", "mlp"],
+        default="linear",
+        help="Activation probe family. 'mlp' tests whether the activation findings survive "
+        "a stronger probe than logistic regression.",
+    )
+    parser.add_argument("--probe-hidden-dim", type=int, default=64)
+    parser.add_argument(
         "--bootstrap-resamples",
         type=int,
         default=10000,
@@ -421,6 +429,8 @@ def attach_in_sample_activation_scores(
         epochs=args.epochs,
         learning_rate=args.learning_rate,
         l2=args.l2,
+        probe_kind=args.probe_kind,
+        hidden_dim=args.probe_hidden_dim,
     )
     probabilities = [float(value) for value in probe["test_probabilities"].tolist()]
     for row, probability in zip(rows, probabilities, strict=True):
@@ -510,6 +520,8 @@ def run_crossfit_rung(
             epochs=args.epochs,
             learning_rate=args.learning_rate,
             l2=args.l2,
+            probe_kind=args.probe_kind,
+            hidden_dim=args.probe_hidden_dim,
             calibration_folds=args.calibration_folds,
             seed=f"{args.seed_prefix}:crossfit:{split_index:03d}",
         )
@@ -564,6 +576,8 @@ def run_blind_rung(
         epochs=args.epochs,
         learning_rate=args.learning_rate,
         l2=args.l2,
+        probe_kind=args.probe_kind,
+        hidden_dim=args.probe_hidden_dim,
         calibration_folds=args.calibration_folds,
         seed=f"{args.seed_prefix}:blind",
     )
@@ -648,6 +662,8 @@ def run_shifted_rung(
             epochs=args.epochs,
             learning_rate=args.learning_rate,
             l2=args.l2,
+            probe_kind=args.probe_kind,
+            hidden_dim=args.probe_hidden_dim,
             calibration_folds=args.calibration_folds,
             seed=f"{args.seed_prefix}:shifted:{source}",
         )

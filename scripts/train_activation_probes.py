@@ -191,6 +191,57 @@ def slice_metrics(
     return output
 
 
+def _sigmoid(np: Any, logits: Any) -> Any:
+    return 1.0 / (1.0 + np.exp(-np.clip(logits, -30.0, 30.0)))
+
+
+def _train_mlp(
+    np: Any,
+    train_x: Any,
+    train_y: Any,
+    test_x: Any,
+    sample_weights: Any,
+    *,
+    epochs: int,
+    learning_rate: float,
+    l2: float,
+    hidden_dim: int,
+    seed: int,
+) -> tuple[Any, Any]:
+    """One-hidden-layer ReLU MLP, class-weighted BCE, full-batch GD. Returns (train_p, test_p).
+
+    A stronger probe than logistic regression, so the activation findings cannot be dismissed
+    as an artifact of using only a linear probe.
+    """
+    rng = np.random.default_rng(seed)
+    n_features = train_x.shape[1]
+    w1 = (rng.standard_normal((n_features, hidden_dim)) * np.sqrt(2.0 / n_features)).astype(
+        np.float32
+    )
+    b1 = np.zeros(hidden_dim, dtype=np.float32)
+    w2 = (rng.standard_normal(hidden_dim) * np.sqrt(2.0 / hidden_dim)).astype(np.float32)
+    b2 = 0.0
+    weight_sum = float(sample_weights.sum())
+    for _ in range(epochs):
+        hidden_pre = train_x @ w1 + b1
+        hidden = np.maximum(hidden_pre, 0.0)
+        logits = hidden @ w2 + b2
+        probabilities = _sigmoid(np, logits)
+        d_logits = (probabilities - train_y) * sample_weights / weight_sum
+        grad_w2 = hidden.T @ d_logits + l2 * w2
+        grad_b2 = float(d_logits.sum())
+        d_hidden = np.outer(d_logits, w2) * (hidden_pre > 0.0)
+        grad_w1 = train_x.T @ d_hidden + l2 * w1
+        grad_b1 = d_hidden.sum(axis=0)
+        w1 -= learning_rate * grad_w1
+        b1 -= learning_rate * grad_b1
+        w2 -= learning_rate * grad_w2
+        b2 -= learning_rate * grad_b2
+    train_probabilities = _sigmoid(np, np.maximum(train_x @ w1 + b1, 0.0) @ w2 + b2)
+    test_probabilities = _sigmoid(np, np.maximum(test_x @ w1 + b1, 0.0) @ w2 + b2)
+    return train_probabilities, test_probabilities
+
+
 def train_probe(
     np: Any,
     vectors: list[list[float]],
@@ -201,6 +252,9 @@ def train_probe(
     epochs: int,
     learning_rate: float,
     l2: float,
+    probe_kind: str = "linear",
+    hidden_dim: int = 64,
+    seed: int = 0,
 ) -> dict[str, Any]:
     x = np.asarray(vectors, dtype=np.float32)
     y = np.asarray(labels, dtype=np.float32)
@@ -215,29 +269,41 @@ def train_probe(
     train_x = (train_x_raw - mean_vector) / scale_vector
     test_x = (test_x_raw - mean_vector) / scale_vector
 
-    weights = np.zeros(train_x.shape[1], dtype=np.float32)
-    bias = 0.0
     positives = float(train_y.sum())
     negatives = float(len(train_y) - positives)
     positive_weight = len(train_y) / (2 * positives) if positives else 1.0
     negative_weight = len(train_y) / (2 * negatives) if negatives else 1.0
     sample_weights = np.where(train_y == 1.0, positive_weight, negative_weight)
 
-    for _ in range(epochs):
-        logits = train_x @ weights + bias
-        probabilities = 1.0 / (1.0 + np.exp(-np.clip(logits, -30.0, 30.0)))
-        errors = (probabilities - train_y) * sample_weights
-        grad_w = (train_x.T @ errors) / len(train_y) + l2 * weights
-        grad_b = float(errors.mean())
-        weights -= learning_rate * grad_w
-        bias -= learning_rate * grad_b
+    weights = np.zeros(train_x.shape[1], dtype=np.float32)
+    bias = 0.0
+    if probe_kind == "mlp":
+        train_probabilities, test_probabilities = _train_mlp(
+            np,
+            train_x,
+            train_y,
+            test_x,
+            sample_weights,
+            epochs=epochs,
+            learning_rate=learning_rate,
+            l2=l2,
+            hidden_dim=hidden_dim,
+            seed=seed,
+        )
+    elif probe_kind == "linear":
+        for _ in range(epochs):
+            logits = train_x @ weights + bias
+            probabilities = _sigmoid(np, logits)
+            errors = (probabilities - train_y) * sample_weights
+            grad_w = (train_x.T @ errors) / len(train_y) + l2 * weights
+            grad_b = float(errors.mean())
+            weights -= learning_rate * grad_w
+            bias -= learning_rate * grad_b
+        train_probabilities = _sigmoid(np, train_x @ weights + bias)
+        test_probabilities = _sigmoid(np, test_x @ weights + bias)
+    else:
+        raise ValueError(f"unknown probe_kind: {probe_kind}")
 
-    train_probabilities = 1.0 / (
-        1.0 + np.exp(-np.clip(train_x @ weights + bias, -30.0, 30.0))
-    )
-    test_probabilities = 1.0 / (
-        1.0 + np.exp(-np.clip(test_x @ weights + bias, -30.0, 30.0))
-    )
     test_thresholds = threshold_sweep(test_y, test_probabilities)
     selected_threshold = float(test_thresholds["target_fpr_0_05"]["threshold"])
 
@@ -246,6 +312,7 @@ def train_probe(
         "bias": bias,
         "mean": mean_vector,
         "scale": scale_vector,
+        "probe_kind": probe_kind,
         "selected_threshold": selected_threshold,
         "train_probabilities": train_probabilities,
         "test_probabilities": test_probabilities,

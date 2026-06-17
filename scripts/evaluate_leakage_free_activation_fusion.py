@@ -115,13 +115,11 @@ def attach_split_activation_scores(
     l2: float,
     calibration_folds: int,
     seed: str,
+    probe_kind: str = "linear",
+    hidden_dim: int = 64,
 ) -> dict[str, Any]:
-    calibration_labels = [
-        int(binary_label(str(row["reviewed_label"]))) for row in calibration_rows
-    ]
-    calibration_vectors = [
-        activation_vectors[str(row["source_id"])] for row in calibration_rows
-    ]
+    calibration_labels = [int(binary_label(str(row["reviewed_label"]))) for row in calibration_rows]
+    calibration_vectors = [activation_vectors[str(row["source_id"])] for row in calibration_rows]
     crossfit_report = attach_crossfit_calibration_scores(
         np,
         calibration_rows,
@@ -132,6 +130,8 @@ def attach_split_activation_scores(
         learning_rate=learning_rate,
         l2=l2,
         seed=seed,
+        probe_kind=probe_kind,
+        hidden_dim=hidden_dim,
     )
 
     rows = calibration_rows + holdout_rows
@@ -148,6 +148,8 @@ def attach_split_activation_scores(
         epochs=epochs,
         learning_rate=learning_rate,
         l2=l2,
+        probe_kind=probe_kind,
+        hidden_dim=hidden_dim,
     )
     test_probs = [float(value) for value in probe["test_probabilities"].tolist()]
     for row, probability in zip(holdout_rows, test_probs, strict=True):
@@ -194,6 +196,8 @@ def attach_crossfit_calibration_scores(
     learning_rate: float,
     l2: float,
     seed: str,
+    probe_kind: str = "linear",
+    hidden_dim: int = 64,
 ) -> dict[str, Any]:
     if folds <= 1:
         probe = train_probe(
@@ -205,6 +209,8 @@ def attach_crossfit_calibration_scores(
             epochs=epochs,
             learning_rate=learning_rate,
             l2=l2,
+            probe_kind=probe_kind,
+            hidden_dim=hidden_dim,
         )
         probabilities = [float(value) for value in probe["test_probabilities"].tolist()]
         for row, probability in zip(calibration_rows, probabilities, strict=True):
@@ -244,6 +250,8 @@ def attach_crossfit_calibration_scores(
             epochs=epochs,
             learning_rate=learning_rate,
             l2=l2,
+            probe_kind=probe_kind,
+            hidden_dim=hidden_dim,
         )
         test_probabilities = [float(value) for value in probe["test_probabilities"].tolist()]
         for idx, probability in zip(test_indices, test_probabilities, strict=True):
