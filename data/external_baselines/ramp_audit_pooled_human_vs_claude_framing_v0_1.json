@@ -1,0 +1,17 @@
+{
+  "a_unsafe_rate": 0.8761061946902655,
+  "b_unsafe_rate": 0.7610619469026548,
+  "confusion": {
+    "a0_b0": 14,
+    "a0_b1": 0,
+    "a1_b0": 13,
+    "a1_b1": 86
+  },
+  "kappa": 0.6210987877224661,
+  "labels_a_count": 132,
+  "labels_b_count": 403,
+  "n": 113,
+  "name_a": "human_pooled",
+  "name_b": "claude_framing",
+  "raw_agreement": 0.8849557522123894
+}

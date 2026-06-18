@@ -15,7 +15,7 @@
 
 ## Residual risks
 - value does not robustly pass BOTH out-of-distribution rungs (blind random sample and held-out source); see per-rung diagnostics
-- blind rung uses LLM-judge silver labels (inter-judge kappa=0.810); human-audited at kappa=0.573 (moderate; residual is genuine borderline-case variance, not rubric failure)
+- blind rung uses LLM-judge silver labels (inter-judge kappa=0.810); human-audited at kappa=0.621 (substantial; residual is genuine borderline-case variance, not rubric failure)
 
 config_hash: `sha256:db6c8059a687bf4929529a76d2738e96d0a93067e0c5dad0259a95effd30c1fd`
 inputs_hash: `sha256:065a70c099e8a028aa385af4e103893f5ad00b5349e0d9d6145bee48246fd237`
@@ -61,7 +61,7 @@ inputs_hash: `sha256:065a70c099e8a028aa385af4e103893f5ad00b5349e0d9d6145bee48246
 
 ## Residual risks
 - value does not robustly pass BOTH out-of-distribution rungs (blind random sample and held-out source); see per-rung diagnostics
-- blind rung uses LLM-judge silver labels (inter-judge kappa=0.810); human-audited at kappa=0.573 (moderate; residual is genuine borderline-case variance, not rubric failure)
+- blind rung uses LLM-judge silver labels (inter-judge kappa=0.810); human-audited at kappa=0.621 (substantial; residual is genuine borderline-case variance, not rubric failure)
 
 config_hash: `sha256:db6c8059a687bf4929529a76d2738e96d0a93067e0c5dad0259a95effd30c1fd`
 inputs_hash: `sha256:065a70c099e8a028aa385af4e103893f5ad00b5349e0d9d6145bee48246fd237`

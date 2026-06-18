@@ -1,0 +1,17 @@
+{
+  "a_unsafe_rate": 0.8688524590163934,
+  "b_unsafe_rate": 0.8032786885245902,
+  "confusion": {
+    "a0_b0": 7,
+    "a0_b1": 1,
+    "a1_b0": 5,
+    "a1_b1": 48
+  },
+  "kappa": 0.6439688715953307,
+  "labels_a_count": 63,
+  "labels_b_count": 465,
+  "n": 61,
+  "name_a": "human2",
+  "name_b": "gemini_framing",
+  "raw_agreement": 0.9016393442622951
+}

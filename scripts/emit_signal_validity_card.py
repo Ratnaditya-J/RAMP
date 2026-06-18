@@ -38,6 +38,19 @@ def _canonical_hash(obj: Any) -> str:
     )
 
 
+def _kappa_descriptor(kappa: float) -> str:
+    """Landis-Koch agreement bands."""
+    if kappa < 0.21:
+        return "slight"
+    if kappa < 0.41:
+        return "fair"
+    if kappa < 0.61:
+        return "moderate"
+    if kappa < 0.81:
+        return "substantial"
+    return "almost perfect"
+
+
 def _survives(cell: dict[str, Any]) -> bool:
     return cell.get("verdict") == "survives"
 
@@ -186,8 +199,8 @@ def _claims_for(
         else:
             residual.append(
                 f"blind rung uses LLM-judge silver labels{kappa_note}; human-audited at "
-                f"kappa={human_audit_kappa:.3f} (moderate; residual is genuine "
-                "borderline-case variance, not rubric failure)"
+                f"kappa={human_audit_kappa:.3f} ({_kappa_descriptor(human_audit_kappa)}; "
+                "residual is genuine borderline-case variance, not rubric failure)"
             )
     return {"allowed": allowed, "disallowed": disallowed, "residual": residual}
 

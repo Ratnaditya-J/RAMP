@@ -59,7 +59,7 @@
         "blind_label_provenance": "silver_llm_inter_judge_validated",
         "blind_label_rubric": "framing_inclusive",
         "front_door": "qwen3guard_0.6b",
-        "human_audit_kappa": 0.573,
+        "human_audit_kappa": 0.621,
         "inter_judge_kappa": 0.81,
         "probe_kind": "linear",
         "rungs": [
@@ -140,14 +140,14 @@
     "rerun_command": "evaluate_signal_survival_ladder.py + judge --rubric framing_inclusive",
     "residual_risks": [
       "value does not robustly pass BOTH out-of-distribution rungs (blind random sample and held-out source); see per-rung diagnostics",
-      "blind rung uses LLM-judge silver labels (inter-judge kappa=0.810); human-audited at kappa=0.573 (moderate; residual is genuine borderline-case variance, not rubric failure)"
+      "blind rung uses LLM-judge silver labels (inter-judge kappa=0.810); human-audited at kappa=0.621 (substantial; residual is genuine borderline-case variance, not rubric failure)"
     ],
     "scope": {
       "axis_specific": {
         "blind_label_provenance": "silver_llm_inter_judge_validated",
         "blind_label_rubric": "framing_inclusive",
         "front_door": "qwen3guard_0.6b",
-        "human_audit_kappa": 0.573,
+        "human_audit_kappa": 0.621,
         "inter_judge_kappa": 0.81,
         "probe_kind": "linear",
         "rungs": [
@@ -228,14 +228,14 @@
     "rerun_command": "evaluate_signal_survival_ladder.py + judge --rubric framing_inclusive",
     "residual_risks": [
       "value does not robustly pass BOTH out-of-distribution rungs (blind random sample and held-out source); see per-rung diagnostics",
-      "blind rung uses LLM-judge silver labels (inter-judge kappa=0.810); human-audited at kappa=0.573 (moderate; residual is genuine borderline-case variance, not rubric failure)"
+      "blind rung uses LLM-judge silver labels (inter-judge kappa=0.810); human-audited at kappa=0.621 (substantial; residual is genuine borderline-case variance, not rubric failure)"
     ],
     "scope": {
       "axis_specific": {
         "blind_label_provenance": "silver_llm_inter_judge_validated",
         "blind_label_rubric": "framing_inclusive",
         "front_door": "qwen3guard_0.6b",
-        "human_audit_kappa": 0.573,
+        "human_audit_kappa": 0.621,
         "inter_judge_kappa": 0.81,
         "probe_kind": "linear",
         "rungs": [

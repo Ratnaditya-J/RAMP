@@ -179,20 +179,23 @@ that match human judgment, BOTH embedding and activation significantly help on a
 random sample. Apparent signal value is sensitive not just to evaluation protocol
 (leakage / sampling / shift) but to the label standard too.
 
-Caveat: re-validating on the same 80 audit rows that informed the rubric choice is
-confirmatory, not fully independent. The framing-inclusive rubric was written from the
-principle the human endorsed, not fitted to individual labels; a fresh second audit batch
-under the agreed standard would make it airtight.
+Independent second audit (fresh 80 rows the frozen rubric never touched, zero overlap with
+the first): human vs Claude-framing kappa 0.66, vs Gemini-framing 0.64 — ABOVE the
+confirmatory estimate, so the rubric was not overfit to the first batch. Pooled across all
+160 human-labeled rows: kappa 0.62 (Claude) / 0.61 (Gemini) — "substantial" (Landis-Koch),
+with disagreement still one-directional (the human is stricter). The framing-inclusive
+blind labels are therefore independently human-validated at substantial agreement,
+comparable to human-human agreement on safety labeling.
 
 Signal Validity Cards (`docs/reports/ramp_signal_validity_cards_framing_v0_1.md`) are stable
 to the label correction at the verdict tier: embedding and full_fusion =
 `in_distribution_only`, activation = `leak_inflated`. They now carry
 `blind_label_provenance=silver_llm_inter_judge_validated`, inter-judge kappa 0.81, and
-human-audit kappa 0.57 in the residual-risks block.
+human-audit kappa 0.62 (pooled, substantial) in the residual-risks block.
 
 ## Next
 
-- (Optional, for airtight blind claims) a fresh second human-audit batch under the
-  framing-inclusive standard, for an independent kappa.
+- Blind rung is now independently human-validated (kappa 0.62 substantial across two audit
+  batches). Remaining work is writing, not validation.
 - (Paper-2 scope, not now) extend the ladder across multiple target models, probe families,
   and an external system.
