@@ -1,0 +1,17 @@
+{
+  "a_unsafe_rate": 0.8888888888888888,
+  "b_unsafe_rate": 0.46296296296296297,
+  "confusion": {
+    "a0_b0": 6,
+    "a0_b1": 0,
+    "a1_b0": 23,
+    "a1_b1": 25
+  },
+  "kappa": 0.19455252918287944,
+  "labels_a_count": 69,
+  "labels_b_count": 369,
+  "n": 54,
+  "name_a": "human",
+  "name_b": "claude_opus48",
+  "raw_agreement": 0.5740740740740741
+}

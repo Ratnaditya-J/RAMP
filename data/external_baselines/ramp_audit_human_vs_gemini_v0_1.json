@@ -1,0 +1,17 @@
+{
+  "a_unsafe_rate": 0.9016393442622951,
+  "b_unsafe_rate": 0.6065573770491803,
+  "confusion": {
+    "a0_b0": 6,
+    "a0_b1": 0,
+    "a1_b0": 18,
+    "a1_b1": 37
+  },
+  "kappa": 0.2879377431906615,
+  "labels_a_count": 69,
+  "labels_b_count": 439,
+  "n": 61,
+  "name_a": "human",
+  "name_b": "gemini25pro",
+  "raw_agreement": 0.7049180327868853
+}
