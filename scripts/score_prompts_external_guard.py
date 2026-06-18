@@ -41,8 +41,14 @@ as written. Output ONLY a JSON object and nothing else:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Score eval prompts with an external guard.")
-    parser.add_argument("--feature-table", required=True)
-    parser.add_argument("--review-csv", action="append", default=[], required=True)
+    parser.add_argument("--feature-table", default=None)
+    parser.add_argument("--review-csv", action="append", default=[])
+    parser.add_argument(
+        "--prompts-csv",
+        default=None,
+        help="Generic input: a CSV with source_id + prompt_text columns. Bypasses the "
+        "feature-table/review-csv join (use for external benchmarks like ToxicChat).",
+    )
     parser.add_argument("--model", required=True, help="OpenRouter guard model id.")
     parser.add_argument("--mode", choices=["probability", "llamaguard"], default="probability")
     parser.add_argument("--output-jsonl", required=True)
@@ -225,10 +231,26 @@ def load_done_ids(path: Path) -> set[str]:
     return done
 
 
+def load_prompts_csv(path: Path) -> dict[str, str]:
+    prompts: dict[str, str] = {}
+    with path.open(encoding="utf-8-sig", newline="") as input_file:
+        for row in csv.DictReader(input_file):
+            source_id = str(row.get("source_id", "")).strip()
+            text = str(row.get("prompt_text", ""))
+            if source_id and text.strip():
+                prompts[source_id] = text
+    return prompts
+
+
 def main() -> None:
     args = parse_args()
     api_key = require_api_key(args.api_key_env)
-    prompts = collect_eval_ids(Path(args.feature_table), [Path(p) for p in args.review_csv])
+    if args.prompts_csv:
+        prompts = load_prompts_csv(Path(args.prompts_csv))
+    elif args.feature_table and args.review_csv:
+        prompts = collect_eval_ids(Path(args.feature_table), [Path(p) for p in args.review_csv])
+    else:
+        raise RuntimeError("provide --prompts-csv, or both --feature-table and --review-csv")
     output_jsonl = Path(args.output_jsonl)
     output_jsonl.parent.mkdir(parents=True, exist_ok=True)
     done = load_done_ids(output_jsonl) if args.resume else set()
