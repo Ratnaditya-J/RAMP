@@ -1,0 +1,17 @@
+{
+  "a_unsafe_rate": 0.6946564885496184,
+  "b_unsafe_rate": 0.7506361323155216,
+  "confusion": {
+    "a0_b0": 94,
+    "a0_b1": 26,
+    "a1_b0": 4,
+    "a1_b1": 269
+  },
+  "kappa": 0.8103098754706053,
+  "labels_a_count": 403,
+  "labels_b_count": 465,
+  "n": 393,
+  "name_a": "claude_framing",
+  "name_b": "gemini_framing",
+  "raw_agreement": 0.9236641221374046
+}

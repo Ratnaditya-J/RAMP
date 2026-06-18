@@ -77,6 +77,19 @@ def test_silver_labels_forbid_human_validation_claim() -> None:
     assert any("0.887" in c for c in out["claims"]["residual"])
 
 
+def test_human_audit_kappa_updates_residual_from_pending_to_audited() -> None:
+    cells = _cells("survives", "survives", "survives", ("survives", True), ("survives", False))
+    pending = mod.derive_robustness_verdict(
+        cells, blind_label_provenance="silver_llm", inter_judge_kappa=0.81
+    )
+    audited = mod.derive_robustness_verdict(
+        cells, blind_label_provenance="silver_llm", inter_judge_kappa=0.81, human_audit_kappa=0.57
+    )
+    assert any("human audit pending" in c for c in pending["claims"]["residual"])
+    assert not any("human audit pending" in c for c in audited["claims"]["residual"])
+    assert any("human-audited at kappa=0.570" in c for c in audited["claims"]["residual"])
+
+
 def test_build_card_shape_and_no_sieve_import() -> None:
     import sys
 

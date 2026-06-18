@@ -1,0 +1,17 @@
+{
+  "a_unsafe_rate": 0.9,
+  "b_unsafe_rate": 0.7833333333333333,
+  "confusion": {
+    "a0_b0": 6,
+    "a0_b1": 0,
+    "a1_b0": 7,
+    "a1_b1": 47
+  },
+  "kappa": 0.5731707317073171,
+  "labels_a_count": 69,
+  "labels_b_count": 403,
+  "n": 60,
+  "name_a": "human",
+  "name_b": "claude_framing",
+  "raw_agreement": 0.8833333333333333
+}

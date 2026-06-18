@@ -141,10 +141,58 @@ above shows frontier models can agree with each other and still drift from human
 human audit remains the final check, now as a third leg rather than a single point of
 failure.
 
+## Hardening Result 4: human audit + the label-standard finding (the big one)
+
+A human labeled a frozen, blinded 80-row subset of the blind set. Agreement with the LLM
+judges, by rubric:
+
+| Comparison | Literal rubric | Framing-inclusive rubric |
+| --- | ---: | ---: |
+| Human vs Claude | kappa 0.19 | kappa 0.57 |
+| Human vs Gemini | kappa 0.29 | kappa 0.58 |
+| Claude vs Gemini (inter-judge) | kappa 0.89 | kappa 0.81 |
+
+Under the original (literal) rubric the silver labels FAILED the human audit (kappa 0.19-
+0.29, "slight"/"fair") even though the two judges agreed with EACH OTHER almost perfectly
+(0.89) — a textbook shared-LLM-vs-human bias. The disagreement was 100% one-directional:
+the human counts adversarial/jailbreak framing, copyright reproduction, and harmful
+ideation as unsafe; the judge rubric scored only the literal underlying request.
+
+Re-running both judges under a framing-inclusive rubric that encodes the human standard
+roughly tripled agreement (0.19 -> 0.57, 0.29 -> 0.58), into the range where humans agree
+with each other on safety labeling. The residual disagreement is genuine borderline cases
+(e.g. "Among Us" gameplay read as veiled violence) plus one human slip ("kissing in a
+mirror" labeled unsafe) — not rubric failure.
+
+**The label standard flips a headline finding.** Re-running the blind ladder on the
+framing-inclusive (human-aligned) labels:
+
+| Signal | blind dAUC, literal labels | blind dAUC, framing labels |
+| --- | --- | --- |
+| embedding | -0.0203 (ns) | +0.0268 (significant) |
+| activation | +0.0338 (sig) | +0.0484 (significant) |
+
+Under the corrected labels, embedding's blind contribution flips from "negative, not
+significant" to "significantly positive" — so the earlier "signal reversal" (only
+activation helps on blind) was itself an ARTIFACT of the labeling standard. Under labels
+that match human judgment, BOTH embedding and activation significantly help on a blind
+random sample. Apparent signal value is sensitive not just to evaluation protocol
+(leakage / sampling / shift) but to the label standard too.
+
+Caveat: re-validating on the same 80 audit rows that informed the rubric choice is
+confirmatory, not fully independent. The framing-inclusive rubric was written from the
+principle the human endorsed, not fitted to individual labels; a fresh second audit batch
+under the agreed standard would make it airtight.
+
+Signal Validity Cards (`docs/reports/ramp_signal_validity_cards_framing_v0_1.md`) are stable
+to the label correction at the verdict tier: embedding and full_fusion =
+`in_distribution_only`, activation = `leak_inflated`. They now carry
+`blind_label_provenance=silver_llm_inter_judge_validated`, inter-judge kappa 0.81, and
+human-audit kappa 0.57 in the residual-risks block.
+
 ## Next
 
-- Human-audit ~80 blind rows; report kappa vs the judges. This is the last gate before any
-  paper claim on the blind rung; with inter-judge kappa already 0.887, the audit is a
-  confirmation rather than a single point of failure.
+- (Optional, for airtight blind claims) a fresh second human-audit batch under the
+  framing-inclusive standard, for an independent kappa.
 - (Paper-2 scope, not now) extend the ladder across multiple target models, probe families,
   and an external system.

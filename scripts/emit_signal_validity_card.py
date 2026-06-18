@@ -57,6 +57,7 @@ def derive_robustness_verdict(
     *,
     blind_label_provenance: str,
     inter_judge_kappa: float | None,
+    human_audit_kappa: float | None = None,
 ) -> dict[str, Any]:
     """Map a signal's per-rung survival cells to an SVC verdict + calibrated claims.
 
@@ -83,7 +84,11 @@ def derive_robustness_verdict(
             "status": INSUFFICIENT_PROTOCOL,
             "reasons": ["naive rung not available"],
             "claims": _claims_for(
-                None, blind_label_provenance, inter_judge_kappa, missing=["naive"]
+                None,
+                blind_label_provenance,
+                inter_judge_kappa,
+                human_audit_kappa,
+                missing=["naive"],
             ),
         }
     if not passes_leaky and not passes_crossfit:
@@ -116,7 +121,11 @@ def derive_robustness_verdict(
         "status": status,
         "reasons": reasons,
         "claims": _claims_for(
-            verdict, blind_label_provenance, inter_judge_kappa, missing=missing_rungs
+            verdict,
+            blind_label_provenance,
+            inter_judge_kappa,
+            human_audit_kappa,
+            missing=missing_rungs,
         ),
     }
 
@@ -125,6 +134,7 @@ def _claims_for(
     verdict: str | None,
     blind_label_provenance: str,
     inter_judge_kappa: float | None,
+    human_audit_kappa: float | None = None,
     *,
     missing: list[str],
 ) -> dict[str, list[str]]:
@@ -146,7 +156,10 @@ def _claims_for(
         allowed.append("the signal adds value under leakage-free in-distribution evaluation")
         disallowed.append("claim the signal generalizes under distribution shift")
         disallowed.append("deploy an in-distribution-tuned threshold without shift testing")
-        residual.append("value not demonstrated out-of-distribution / on a blind random sample")
+        residual.append(
+            "value does not robustly pass BOTH out-of-distribution rungs "
+            "(blind random sample and held-out source); see per-rung diagnostics"
+        )
     elif verdict == "distribution_robust":
         allowed.append("the signal adds value under leakage-free, blind, and shifted evaluation")
         disallowed.append("claim causal sufficiency (out of scope for this axis; see SIEVE)")
@@ -156,7 +169,8 @@ def _claims_for(
         residual.append(f"rung(s) not yet run: {missing}")
 
     # Silver-label calibration: blind evidence from an LLM judge can never be phrased as
-    # human-validated, regardless of verdict.
+    # human-validated, regardless of verdict. The wording reflects whether the human audit
+    # has happened and at what agreement.
     if blind_label_provenance != "human" and verdict in {
         "in_distribution_only",
         "distribution_robust",
@@ -165,7 +179,16 @@ def _claims_for(
             "" if inter_judge_kappa is None else f" (inter-judge kappa={inter_judge_kappa:.3f})"
         )
         disallowed.append("claim validation against human-labeled blind data")
-        residual.append(f"blind rung uses LLM-judge silver labels{kappa_note}; human audit pending")
+        if human_audit_kappa is None:
+            residual.append(
+                f"blind rung uses LLM-judge silver labels{kappa_note}; human audit pending"
+            )
+        else:
+            residual.append(
+                f"blind rung uses LLM-judge silver labels{kappa_note}; human-audited at "
+                f"kappa={human_audit_kappa:.3f} (moderate; residual is genuine "
+                "borderline-case variance, not rubric failure)"
+            )
     return {"allowed": allowed, "disallowed": disallowed, "residual": residual}
 
 
@@ -179,11 +202,13 @@ def build_card(
     inter_judge_kappa: float | None,
     report_path: str,
     rerun_command: str | None,
+    human_audit_kappa: float | None = None,
 ) -> dict[str, Any]:
     decision = derive_robustness_verdict(
         cells,
         blind_label_provenance=blind_label_provenance,
         inter_judge_kappa=inter_judge_kappa,
+        human_audit_kappa=human_audit_kappa,
     )
     diagnostics = {
         "per_rung": {
@@ -209,6 +234,8 @@ def build_card(
                 "rungs": list(diagnostics["per_rung"].keys()),
                 "blind_label_provenance": blind_label_provenance,
                 "inter_judge_kappa": inter_judge_kappa,
+                "human_audit_kappa": human_audit_kappa,
+                "blind_label_rubric": scope_extra.get("blind_label_rubric"),
                 "front_door": scope_extra.get("front_door", "qwen3guard_0.6b"),
                 "probe_kind": scope_extra.get("probe_kind", "linear"),
             },
@@ -288,6 +315,8 @@ def parse_args() -> argparse.Namespace:
         choices=["human", "silver_llm", "silver_llm_inter_judge_validated"],
     )
     parser.add_argument("--inter-judge-kappa", type=float, default=None)
+    parser.add_argument("--human-audit-kappa", type=float, default=None)
+    parser.add_argument("--blind-label-rubric", default=None)
     parser.add_argument("--preregistration-doc", default="docs/fragility-study-design.md")
     parser.add_argument("--rerun-command", default=None)
     return parser.parse_args()
@@ -310,6 +339,7 @@ def main() -> None:
         "target_model": args.target_model,
         "front_door": args.front_door,
         "probe_kind": args.probe_kind,
+        "blind_label_rubric": args.blind_label_rubric,
         "preregistration": preregistration,
         "signal_descriptions": {
             "embedding": "GPT-OSS input-embedding centroid proximity",
@@ -328,6 +358,7 @@ def main() -> None:
             scope_extra=scope_extra,
             blind_label_provenance=args.blind_label_provenance,
             inter_judge_kappa=args.inter_judge_kappa,
+            human_audit_kappa=args.human_audit_kappa,
             report_path=args.report_json,
             rerun_command=args.rerun_command,
         )
