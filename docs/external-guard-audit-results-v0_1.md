@@ -77,10 +77,44 @@ Cards: `docs/reports/ramp_guard_card_llamaguard4_v0_1.json`,
   analysis; a logprob-capable deployment (local/GPU) would enable AUROC and threshold
   transfer for it too.
 
+## Native-label replication (ToxicChat — fixes the judge-label caveat)
+
+Using the HF token, both guards were re-audited on **ToxicChat** (lmsys/toxic-chat), a
+public benchmark with its OWN toxicity labels and two temporal releases (0124, 1123) that
+form a built-in distribution shift. 2,000 prompts, ~33% toxic, balanced across releases.
+No RAMP labels involved.
+
+| Guard | overall AUROC | overall recall | overall FPR | F1 | threshold transfer across releases |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Llama Guard 4 12B | 0.748 | **0.545** | 0.050 | 0.662 | n/a (binary) — recall stable 0.57/0.52 across releases |
+| Gemini-as-guard | 0.782 | **0.480** | 0.009 | 0.641 | **transfers** (held-out recall 0.56-0.59, FPR stable ~0.01) |
+
+Two native-label findings:
+
+1. **Absolute generalization gap.** On ToxicChat, both published guards catch only roughly
+   HALF of the toxic queries (Llama Guard recall 0.55, Gemini-as-guard 0.48) at sensible
+   FPR — far below the ~0.9+ such guards report on their own eval distributions. ToxicChat
+   is real user-to-Vicuna traffic with subtle toxicity; the guards generalize poorly to it.
+   This is on the benchmark's native labels, so it is not a RAMP-labeling artifact.
+
+2. **Threshold transfer depends on shift magnitude.** Across ToxicChat's two temporal
+   releases (a MILD shift) the operating point transfers fine (verdict: robust). But across
+   distinct benchmarks (the RAMP-corpus wildguardmix<->beavertails shift, a LARGE shift) it
+   collapses (recall 0.91->0.57, FPR ~2.6x). So "tune the threshold once, deploy anywhere"
+   survives mild temporal drift but breaks under large cross-distribution shift.
+
 ## What this establishes
 
 RAMP works as a **validity harness for external published guards**, and it produces a
-nuanced, non-trivial result: these guards are NOT fragile to eval-set construction (good for
-them), but a continuous guard's operating point IS fragile to source shift (a real
-deployment caution). That contrast — and the catching of an earlier label-provenance
-confound — is the kind of finding the harness is for.
+nuanced, non-trivial, native-label-backed result:
+
+- Published guards are NOT fragile to eval-set construction (adaptive-vs-blind, provenance
+  controlled).
+- They have a real **absolute generalization gap** (~50% recall on ToxicChat).
+- Their operating point transfers under mild shift but is **fragile under large
+  cross-benchmark shift**.
+- And the harness caught an earlier RAMP label-provenance confound along the way.
+
+That spread of outcomes — robust here, fragile there, with a quantified generalization gap —
+is exactly what a validity harness is for, and it is demonstrated on external, published
+artifacts with their own labels.
