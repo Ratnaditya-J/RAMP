@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "ramp-risk"
 version = "0.1.0"
-description = "Risk Accumulation and Monitoring Pipeline for LLM and agent safety."
+description = "Robustness Audit for Monitoring Probes in LLM and agent safety."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
@@ -29,6 +29,7 @@ dev = [
 ramp-single-turn-demo = "ramp.cli:single_turn_demo"
 ramp-prompt-risk = "ramp.cli:prompt_risk"
 ramp-embedding-risk = "ramp.cli:embedding_risk"
+ramp-audit = "ramp.audit.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/ramp"]

@@ -68,6 +68,23 @@ def test_asymmetry_missing_blind_caps_claim() -> None:
     assert out["status"] == mod.INSUFFICIENT_PROTOCOL
 
 
+def test_crossfit_absent_negative_verdict_is_insufficient_protocol() -> None:
+    # Aligned with the package engine (fix #3): a no_value/leak_inflated verdict that
+    # only holds because crossfit was never run is provisional, not settled.
+    no_value = _verdict(_cells("fails", "fails", "not_run", "not_run", "not_run"))
+    assert no_value["verdict"] == "no_value"
+    assert no_value["status"] == mod.INSUFFICIENT_PROTOCOL
+
+    leaky = _verdict(_cells("survives", "survives", "not_run", "not_run", "not_run"))
+    assert leaky["verdict"] == "leak_inflated"
+    assert leaky["status"] == mod.INSUFFICIENT_PROTOCOL
+
+    # crossfit present + failing -> settled negative; status stays ok.
+    settled = _verdict(_cells("survives", "survives", "fails", "fails", "fails"))
+    assert settled["verdict"] == "leak_inflated"
+    assert settled["status"] == "ok"
+
+
 def test_silver_labels_forbid_human_validation_claim() -> None:
     cells = _cells("survives", "survives", "survives", ("survives", True), ("survives", True))
     out = _verdict(cells, provenance="silver_llm", kappa=0.887)

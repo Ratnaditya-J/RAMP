@@ -1,4 +1,4 @@
-"""RAMP: Risk Accumulation and Monitoring Pipeline."""
+"""RAMP: Robustness Audit for Monitoring Probes."""
 
 from ramp.fusion import CalibratedFusionConfig, WeightedRiskFusion
 from ramp.pipeline import RampPipeline, default_pipeline

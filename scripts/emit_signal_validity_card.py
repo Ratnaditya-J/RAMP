@@ -107,9 +107,18 @@ def derive_robustness_verdict(
     if not passes_leaky and not passes_crossfit:
         verdict = "no_value"
         reasons.append("does not survive even the naive rung")
+        # no_value/leak_inflated both hinge on crossfit FAILING. If crossfit was never
+        # run, the verdict is provisional: flag the protocol gap so a missing rung never
+        # masquerades as a settled negative result.
+        if not _rung_available(cells, "crossfit"):
+            status = INSUFFICIENT_PROTOCOL
+            reasons.append("crossfit rung not available; negative verdict is provisional")
     elif passes_leaky and not passes_crossfit:
         verdict = "leak_inflated"
         reasons.append("survives leaky rungs (naive/split) but not leakage-free crossfit")
+        if not _rung_available(cells, "crossfit"):
+            status = INSUFFICIENT_PROTOCOL
+            reasons.append("crossfit rung not available; leak_inflated verdict is provisional")
     else:
         # passes crossfit -> at least in_distribution_only; check OOD for the top tier.
         verdict = "in_distribution_only"
