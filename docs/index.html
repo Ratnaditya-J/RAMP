@@ -101,12 +101,12 @@
   </head>
   <body>
     <main>
-      <h1>RAMP: Risk Accumulation and Monitoring Pipeline</h1>
+      <h1>RAMP: Robustness Audit for Monitoring Probes</h1>
       <p class="lede">
-        RAMP is an open-source reference implementation for evaluating multi-signal safety
-        classifiers under a common schema. It compares standalone guard models with accumulated
-        evidence variants across prompt, embedding, activation, output, session, and tool/action
-        signals.
+        RAMP audits whether a safety signal holds up under honest evaluation. It runs a
+        pre-registered survival ladder (leakage-free cross-fitting, blind labels, distribution
+        shift) over guard models and activation probes, and emits a scoped Signal Validity Card
+        on the robustness axis of safety-signal validity.
       </p>
       <nav class="actions" aria-label="Primary links">
         <a class="button primary" href="./walkthrough/">View Visual Walkthrough</a>
